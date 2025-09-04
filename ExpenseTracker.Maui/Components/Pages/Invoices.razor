@@ -2,6 +2,8 @@
 @inject ExpenseService ExpenseService
 @inject IJSRuntime JSRuntime
 
+<PageTitle>Invoices - Expense Tracker</PageTitle>
+
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-12">
@@ -10,38 +12,415 @@
                     <i data-lucide="file-text" class="me-2"></i>
                     Invoices
                 </h2>
-                <button class="btn btn-primary">
+                <button class="btn btn-primary" @onclick="ShowAddForm">
                     <i data-lucide="plus" class="me-1"></i>
                     Add Invoice
                 </button>
             </div>
 
-            <div class="alert alert-info">
-                <i data-lucide="info" class="me-2"></i>
-                Invoice management functionality will be implemented soon.
-            </div>
+            @if (loading)
+            {
+                <div class="alert alert-info">
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    Loading invoices...
+                </div>
+            }
 
-            <div class="card">
-                <div class="card-body text-center py-5">
-                    <i data-lucide="file-text" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
-                    <h5 class="text-muted">No invoices found</h5>
-                    <p class="text-muted">Start by adding your first invoice.</p>
-                    <button class="btn btn-primary">
-                        <i data-lucide="plus" class="me-1"></i>
-                        Add Invoice
-                    </button>
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert alert-danger">
+                    <i data-lucide="alert-circle" class="me-2"></i>
+                    @error
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (showForm && !loading)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            @(editingInvoice != null ? "Edit Invoice" : "Add New Invoice")
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <InvoiceForm 
+                            Invoice="@currentInvoice"
+                            OnSave="@HandleSave"
+                            OnCancel="@HandleCancel" />
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
+
+    @if (!showForm && !loading)
+    {
+        <!-- Filters -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Search</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i data-lucide="search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" placeholder="Search invoices..."
+                                           @bind="searchTerm" @oninput="OnSearchInput" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" @bind="filterCategory" @onchange="ApplyFilters">
+                                    <option value="">All Categories</option>
+                                    <option value="Office Supplies">Office Supplies</option>
+                                    <option value="Equipment">Equipment</option>
+                                    <option value="Software">Software</option>
+                                    <option value="Travel">Travel</option>
+                                    <option value="Meals">Meals</option>
+                                    <option value="Utilities">Utilities</option>
+                                    <option value="Professional Services">Professional Services</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Payment Status</label>
+                                <select class="form-select" @bind="filterStatus" @onchange="ApplyFilters">
+                                    <option value="">All Statuses</option>
+                                    <option value="Paid">Paid</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Overdue">Overdue</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Sort By</label>
+                                <select class="form-select" @bind="sortBy" @onchange="ApplyFilters">
+                                    <option value="name">Sort by Name</option>
+                                    <option value="amount">Sort by Amount</option>
+                                    <option value="paymentDate">Sort by Payment Date</option>
+                                    <option value="status">Sort by Status</option>
+                                    <option value="category">Sort by Category</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice List -->
+        <div class="row">
+            @if (filteredInvoices?.Any() == true)
+            {
+                @foreach (var invoice in filteredInvoices)
+                {
+                    <div class="col-lg-6 col-xl-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">@invoice.Name</span>
+                                <span class="badge @GetStatusBadgeClass(invoice.PaymentStatus)">
+                                    @invoice.PaymentStatus
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <h4 class="text-primary mb-3">@FormatCurrency(invoice.Amount)</h4>
+                                
+                                <div class="mb-2">
+                                    <small class="text-muted">Invoice Number:</small><br />
+                                    <strong>@invoice.InvoiceNumber</strong>
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(invoice.Category))
+                                {
+                                    <div class="mb-2">
+                                        <span class="badge bg-secondary">@invoice.Category</span>
+                                    </div>
+                                }
+
+                                <div class="mb-2">
+                                    <small class="text-muted">Payment Date:</small><br />
+                                    @invoice.PaymentDate.ToString("MMM dd, yyyy")
+                                </div>
+
+                                @if (invoice.DueDate.HasValue)
+                                {
+                                    <div class="mb-2">
+                                        <small class="text-muted">Due Date:</small><br />
+                                        @invoice.DueDate.Value.ToString("MMM dd, yyyy")
+                                        <span class="@GetDueDateClass(invoice.DueDate.Value, invoice.PaymentStatus)">
+                                            (@GetDaysUntilDue(invoice.DueDate.Value, invoice.PaymentStatus))
+                                        </span>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(invoice.Notes))
+                                {
+                                    <div class="mb-2">
+                                        <small class="text-muted">Notes:</small><br />
+                                        <small>@invoice.Notes</small>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(invoice.AttachmentUrl))
+                                {
+                                    <div class="mb-2">
+                                        <a href="@invoice.AttachmentUrl" target="_blank" class="text-decoration-none">
+                                            <i data-lucide="paperclip" class="me-1"></i>
+                                            View Attachment
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <div class="btn-group w-100" role="group">
+                                    <button class="btn btn-outline-primary btn-sm" @onclick="() => EditInvoice(invoice)">
+                                        <i data-lucide="edit" class="me-1"></i>
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteInvoice(invoice.Id)">
+                                        <i data-lucide="trash-2" class="me-1"></i>
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <i data-lucide="file-text" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
+                            <h5 class="text-muted">No invoices found</h5>
+                            <p class="text-muted">Start tracking your one-time expenses by adding your first invoice.</p>
+                            <button class="btn btn-primary" @onclick="ShowAddForm">
+                                <i data-lucide="plus" class="me-1"></i>
+                                Add Your First Invoice
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 </div>
 
 @code {
+    private List<Invoice> invoices = new();
+    private List<Invoice> filteredInvoices = new();
+    private bool loading = true;
+    private bool showForm = false;
+    private string? error;
+    
+    private Invoice? editingInvoice;
+    private Invoice currentInvoice = new();
+
+    private string searchTerm = "";
+    private string filterCategory = "";
+    private string filterStatus = "";
+    private string sortBy = "name";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInvoices();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             await JSRuntime.InvokeVoidAsync("expenseTracker.initializeIcons");
         }
+    }
+
+    private async Task LoadInvoices()
+    {
+        try
+        {
+            loading = true;
+            error = null;
+
+            invoices = await ExpenseService.GetInvoicesAsync();
+            ApplyFilters();
+        }
+        catch (Exception ex)
+        {
+            error = "Failed to load invoices";
+            Console.WriteLine($"Error loading invoices: {ex.Message}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        var filtered = invoices.AsEnumerable();
+
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filtered = filtered.Where(i =>
+                i.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                i.InvoiceNumber.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                (i.Notes != null && i.Notes.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        // Apply category filter
+        if (!string.IsNullOrWhiteSpace(filterCategory))
+        {
+            filtered = filtered.Where(i => i.Category == filterCategory);
+        }
+
+        // Apply status filter
+        if (!string.IsNullOrWhiteSpace(filterStatus))
+        {
+            filtered = filtered.Where(i => i.PaymentStatus.ToString() == filterStatus);
+        }
+
+        // Apply sorting
+        filtered = sortBy switch
+        {
+            "amount" => filtered.OrderByDescending(i => i.Amount),
+            "paymentDate" => filtered.OrderByDescending(i => i.PaymentDate),
+            "status" => filtered.OrderBy(i => i.PaymentStatus).ThenBy(i => i.Name),
+            "category" => filtered.OrderBy(i => i.Category).ThenBy(i => i.Name),
+            _ => filtered.OrderBy(i => i.Name)
+        };
+
+        filteredInvoices = filtered.ToList();
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? "";
+        ApplyFilters();
+    }
+
+    private void ShowAddForm()
+    {
+        editingInvoice = null;
+        currentInvoice = new Invoice();
+        showForm = true;
+    }
+
+    private void EditInvoice(Invoice invoice)
+    {
+        editingInvoice = invoice;
+        currentInvoice = new Invoice
+        {
+            Id = invoice.Id,
+            Name = invoice.Name,
+            Amount = invoice.Amount,
+            Category = invoice.Category,
+            InvoiceNumber = invoice.InvoiceNumber,
+            PaymentStatus = invoice.PaymentStatus,
+            PaymentDate = invoice.PaymentDate,
+            DueDate = invoice.DueDate,
+            AttachmentUrl = invoice.AttachmentUrl,
+            Notes = invoice.Notes
+        };
+        showForm = true;
+    }
+
+    private async Task HandleSave(Invoice invoice)
+    {
+        try
+        {
+            if (editingInvoice != null)
+            {
+                await ExpenseService.UpdateInvoiceAsync(invoice);
+            }
+            else
+            {
+                await ExpenseService.CreateInvoiceAsync(invoice);
+            }
+
+            await LoadInvoices();
+            showForm = false;
+            editingInvoice = null;
+        }
+        catch (Exception ex)
+        {
+            error = "Failed to save invoice";
+            Console.WriteLine($"Error saving invoice: {ex.Message}");
+        }
+    }
+
+    private void HandleCancel()
+    {
+        showForm = false;
+        editingInvoice = null;
+    }
+
+    private async Task DeleteInvoice(string id)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this invoice?"))
+        {
+            try
+            {
+                await ExpenseService.DeleteInvoiceAsync(id);
+                await LoadInvoices();
+            }
+            catch (Exception ex)
+            {
+                error = "Failed to delete invoice";
+                Console.WriteLine($"Error deleting invoice: {ex.Message}");
+            }
+        }
+    }
+
+    private string GetStatusBadgeClass(PaymentStatus status)
+    {
+        return status switch
+        {
+            PaymentStatus.Paid => "bg-success",
+            PaymentStatus.Pending => "bg-warning text-dark",
+            PaymentStatus.Overdue => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetDueDateClass(DateTime dueDate, PaymentStatus status)
+    {
+        if (status == PaymentStatus.Paid) return "text-success";
+        
+        var days = (dueDate - DateTime.Today).Days;
+        return days switch
+        {
+            var d when d < 0 => "text-danger",
+            var d when d <= 3 => "text-warning",
+            _ => "text-muted"
+        };
+    }
+
+    private string GetDaysUntilDue(DateTime dueDate, PaymentStatus status)
+    {
+        if (status == PaymentStatus.Paid) return "Paid";
+        
+        var days = (dueDate - DateTime.Today).Days;
+        return days switch
+        {
+            var d when d < 0 => $"{Math.Abs(days)} days overdue",
+            0 => "Due today",
+            1 => "Due tomorrow",
+            _ => $"Due in {days} days"
+        };
+    }
+
+    private string FormatCurrency(decimal amount)
+    {
+        return amount.ToString("C2");
     }
 }
