@@ -1,0 +1,3 @@
+# Expense Tracker App - Main Prompt
+
+I want to plan my expenses so I need a cross-platform app to register subscriptions and invoices. Just those kinds of expenses. I need to calculate monthly and yearly balances. Use .NET MAUI with Blazor Hybrid for native mobile and desktop apps, plus a standalone Blazor Web app for web access. Style with CSS, Bootstrap, and Lucide icons. Create a service class to connect with localhost:8083 (backend REST API). Use HttpClient with dependency injection for API communication. Use separate files for Razor components (.razor), code-behind (.razor.cs), and styles. Apply a consistent design system across all platforms using shared Blazor components and global CSS styles.
