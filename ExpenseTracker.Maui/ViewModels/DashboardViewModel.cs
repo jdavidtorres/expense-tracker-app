@@ -27,15 +27,18 @@ public partial class DashboardViewModel : BaseViewModel
     [ObservableProperty]
     private ExpensesSummary currentSummary = new();
 
+    // Properties that expose backend-calculated values
+    public decimal TotalExpenses => CurrentSummary?.Total ?? 0;
+    public decimal MonthlyAverage => CurrentSummary?.MonthlyAverage ?? 0;
+    public decimal YearlyTotal => CurrentSummary?.YearlyTotal ?? 0;
+
     [ObservableProperty]
     private int currentMonth = DateTime.Now.Month;
 
     [ObservableProperty]
     private int currentYear = DateTime.Now.Year;
 
-    public decimal TotalSubscriptions => Subscriptions?.Sum(s => s.Amount) ?? 0;
-    public decimal TotalInvoices => Invoices?.Sum(i => i.Amount) ?? 0;
-    public decimal TotalExpenses => TotalSubscriptions + TotalInvoices;
+
 
     [RelayCommand]
     private async Task LoadDataAsync()
@@ -67,10 +70,10 @@ public partial class DashboardViewModel : BaseViewModel
 
             CurrentSummary = await summaryTask;
 
-            // Notify that calculated properties have changed
-            OnPropertyChanged(nameof(TotalSubscriptions));
-            OnPropertyChanged(nameof(TotalInvoices));
+            // Notify that backend-calculated properties have changed
             OnPropertyChanged(nameof(TotalExpenses));
+            OnPropertyChanged(nameof(MonthlyAverage));
+            OnPropertyChanged(nameof(YearlyTotal));
         }
         catch (Exception ex)
         {

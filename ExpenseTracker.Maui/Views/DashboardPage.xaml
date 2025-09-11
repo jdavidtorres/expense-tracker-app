@@ -41,27 +41,27 @@
                            FontAttributes="Bold" 
                            HorizontalOptions="Center" />
                     
-                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="20" RowSpacing="10">
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="20" RowSpacing="10">
                         
-                        <!-- Total Subscriptions -->
+                        <!-- Monthly Average -->
                         <Frame Grid.Row="0" Grid.Column="0" BackgroundColor="White" Padding="15" CornerRadius="8">
                             <StackLayout>
-                                <Label Text="💳 Subscriptions" FontSize="14" FontAttributes="Bold" />
-                                <Label Text="{Binding TotalSubscriptions, StringFormat='${0:F2}'}" 
+                                <Label Text="📊 Monthly Average" FontSize="14" FontAttributes="Bold" />
+                                <Label Text="{Binding MonthlyAverage, StringFormat='${0:F2}'}" 
                                        FontSize="16" TextColor="Blue" />
                             </StackLayout>
                         </Frame>
 
-                        <!-- Total Invoices -->
+                        <!-- Yearly Total -->
                         <Frame Grid.Row="0" Grid.Column="1" BackgroundColor="White" Padding="15" CornerRadius="8">
                             <StackLayout>
-                                <Label Text="📄 Invoices" FontSize="14" FontAttributes="Bold" />
-                                <Label Text="{Binding TotalInvoices, StringFormat='${0:F2}'}" 
+                                <Label Text="📈 Yearly Total" FontSize="14" FontAttributes="Bold" />
+                                <Label Text="{Binding YearlyTotal, StringFormat='${0:F2}'}" 
                                        FontSize="16" TextColor="Green" />
                             </StackLayout>
                         </Frame>
 
-                        <!-- Total Expenses -->
+                        <!-- Total Expenses (Backend Calculated) -->
                         <Frame Grid.Row="1" Grid.ColumnSpan="2" BackgroundColor="White" Padding="15" CornerRadius="8">
                             <StackLayout>
                                 <Label Text="💰 Total Expenses" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center" />
