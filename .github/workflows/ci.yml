@@ -97,7 +97,7 @@ jobs:
 
     - name: Install MAUI workloads
       run: |
-        dotnet workload install maui-android
+        dotnet workload install maui-android --verbosity normal
         dotnet workload list
 
     - name: Cache NuGet packages
@@ -133,7 +133,7 @@ jobs:
 
     - name: Install MAUI workloads
       run: |
-        dotnet workload install maui
+        dotnet workload install maui --verbosity normal
         dotnet workload list
 
     - name: Cache NuGet packages
@@ -169,7 +169,7 @@ jobs:
 
     - name: Install MAUI workloads
       run: |
-        dotnet workload install maui
+        dotnet workload install maui --verbosity normal
         dotnet workload list
 
     - name: Cache NuGet packages
