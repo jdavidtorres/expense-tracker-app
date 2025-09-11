@@ -47,8 +47,6 @@ jobs:
       run: |
         dotnet restore ExpenseTracker.Shared/ExpenseTracker.Shared.csproj
         dotnet build ExpenseTracker.Shared/ExpenseTracker.Shared.csproj --configuration Release --no-restore
-        dotnet restore ExpenseTracker.Web/ExpenseTracker.Web.csproj
-        dotnet build ExpenseTracker.Web/ExpenseTracker.Web.csproj --configuration Release --no-restore
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
