@@ -2,11 +2,12 @@
 	"name": ".NET MAUI Expense Tracker",
 	"image": "mcr.microsoft.com/dotnet/sdk:9.0",
 	"features": {
-		"ghcr.io/devcontainers/features/android-sdk:1": {
-			"version": "latest"
+		"ghcr.io/devcontainers/features/common-utils:2": {
+			"installZsh": false,
+			"upgradePackages": true
 		}
 	},
-	"postCreateCommand": "dotnet workload install maui",
+	"postCreateCommand": "dotnet workload install maui && dotnet restore ExpenseTracker.sln",
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -14,7 +15,11 @@
 				"ms-dotnettools.csdevkit",
 				"ms-dotnettools.vscode-dotnet-runtime",
 				"ms-vscode.vscode-json",
-				"ms-vscode.xml"
+				"GitHub.copilot",
+				"GitHub.copilot-chat",
+				"ms-azuretools.vscode-containers",
+				"GitHub.vscode-github-actions",
+				"GitHub.remotehub"
 			],
 			"settings": {
 				"dotnet.defaultSolution": "ExpenseTracker.sln"
@@ -22,7 +27,5 @@
 		}
 	},
 	"forwardPorts": [8083],
-	"mounts": [
-		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
-	]
+	"remoteUser": "vscode"
 }
