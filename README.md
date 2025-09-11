@@ -91,7 +91,7 @@ ExpenseTracker/
 ## 🛠️ Development Setup
 
 ### Prerequisites
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/) with MAUI workload
 - [.NET MAUI workload](https://docs.microsoft.com/dotnet/maui/)
 
@@ -116,16 +116,16 @@ dotnet build
 #### MAUI Native Applications
 ```bash
 # Windows (WinUI)
-dotnet run --project ExpenseTracker.Maui --framework net8.0-windows10.0.19041.0
+dotnet run --project ExpenseTracker.Maui --framework net9.0-windows10.0.19041.0
 
 # Android (requires Android SDK)
-dotnet run --project ExpenseTracker.Maui --framework net8.0-android
+dotnet run --project ExpenseTracker.Maui --framework net9.0-android
 
 # iOS (requires Xcode on macOS)
-dotnet run --project ExpenseTracker.Maui --framework net8.0-ios
+dotnet run --project ExpenseTracker.Maui --framework net9.0-ios
 
 # macOS (Mac Catalyst)
-dotnet run --project ExpenseTracker.Maui --framework net8.0-maccatalyst
+dotnet run --project ExpenseTracker.Maui --framework net9.0-maccatalyst
 ```
 
 ## 📱 Platform Support
@@ -298,7 +298,7 @@ For support and questions:
 
 ## 💻 Technologies Used
 
-- **.NET 8.0**: Base framework with latest C# features
+- **.NET 9.0**: Base framework with latest C# features
 - **.NET MAUI**: Cross-platform native app development
 - **CommunityToolkit.Mvvm**: Modern MVVM with source generators
 - **XAML**: Native UI markup for cross-platform layouts

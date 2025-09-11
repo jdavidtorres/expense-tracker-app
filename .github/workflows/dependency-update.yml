@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOTNET_VERSION: '8.0.x'
+  DOTNET_VERSION: '9.0.x'
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
@@ -35,10 +35,6 @@ jobs:
       run: dotnet outdated ExpenseTracker.Shared/ExpenseTracker.Shared.csproj --output json > shared-outdated.json
       continue-on-error: true
 
-    - name: Check for outdated packages in Web project
-      run: dotnet outdated ExpenseTracker.Web/ExpenseTracker.Web.csproj --output json > web-outdated.json
-      continue-on-error: true
-
     - name: Check for outdated packages in MAUI project
       run: dotnet outdated ExpenseTracker.Maui/ExpenseTracker.Maui.csproj --output json > maui-outdated.json
       continue-on-error: true
@@ -59,8 +55,8 @@ jobs:
           let hasOutdated = false;
           let issueBody = '## 📦 Outdated Package Report\n\n';
           
-          const files = ['shared-outdated.json', 'web-outdated.json', 'maui-outdated.json'];
-          const projectNames = ['Shared Library', 'Web Project', 'MAUI Project'];
+          const files = ['shared-outdated.json', 'maui-outdated.json'];
+          const projectNames = ['Shared Library', 'MAUI Project'];
           
           files.forEach((file, index) => {
             if (fs.existsSync(file)) {

@@ -444,6 +444,3 @@ private async Task DeleteSubscriptionAsync(Subscription subscription)
 - Package.appxmanifest configuration
 - File associations for invoice files
 - Windows Hello integration possibilities
-
-### Web
-- No longer applicable - pure MAUI application with native UI
