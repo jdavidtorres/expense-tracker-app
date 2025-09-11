@@ -260,10 +260,10 @@ var token = await SecureStorage.GetAsync("api_token");
 ### Building the Apps
 ```bash
 # Build MAUI app for all platforms
-dotnet build -f net8.0-android
-dotnet build -f net8.0-ios
-dotnet build -f net8.0-windows
-dotnet build -f net8.0-maccatalyst
+dotnet build -f net9.0-android
+dotnet build -f net9.0-ios
+dotnet build -f net9.0-windows
+dotnet build -f net9.0-maccatalyst
 
 # Run in development
 dotnet run --project ExpenseTracker.Maui
@@ -414,7 +414,7 @@ private async Task DeleteSubscriptionAsync(Subscription subscription)
 ```
 
 ## Dependencies
-- **.NET 8.0** - Base framework
+- **.NET 9.0** - Base framework
 - **.NET MAUI** - Cross-platform native app development
 - **CommunityToolkit.Mvvm** - MVVM source generators and base classes
 - **System.Text.Json** - JSON serialization
