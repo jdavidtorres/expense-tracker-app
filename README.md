@@ -1,5 +1,11 @@
 # Expense Tracker - .NET MAUI Native Edition
 
+[![CI/CD Pipeline](https://github.com/jdavidtorres/expense-tracker-app/actions/workflows/ci.yml/badge.svg)](https://github.com/jdavidtorres/expense-tracker-app/actions/workflows/ci.yml)
+[![Security Scan](https://github.com/jdavidtorres/expense-tracker-app/actions/workflows/security.yml/badge.svg)](https://github.com/jdavidtorres/expense-tracker-app/actions/workflows/security.yml)
+[![Latest Release](https://img.shields.io/github/v/release/jdavidtorres/expense-tracker-app?include_prereleases)](https://github.com/jdavidtorres/expense-tracker-app/releases)
+[![License](https://img.shields.io/github/license/jdavidtorres/expense-tracker-app)](LICENSE)
+[![.NET Version](https://img.shields.io/badge/.NET-9.0-blue)](https://dotnet.microsoft.com/download/dotnet/9.0)
+
 A comprehensive cross-platform expense tracking application built with pure .NET MAUI and native XAML, providing native mobile and desktop experiences with modern MVVM architecture.
 
 ## 🚀 Features
@@ -13,10 +19,41 @@ A comprehensive cross-platform expense tracking application built with pure .NET
 - **Real-time API Integration**: Cloud-based REST API communication for data synchronization
 - **Native Performance**: Platform-optimized performance with native MAUI controls
 
+## 📱 Download & Installation
+
+### Pre-built Releases
+Download the latest pre-built applications from our [Releases](https://github.com/jdavidtorres/expense-tracker-app/releases) page:
+
+- **🤖 Android**: Download the APK file for Android devices (API 24+)
+- **🪟 Windows**: Download the ZIP package for Windows 10/11 (Build 19041+)
+- **🍎 iOS/macOS**: Build from source (requires Xcode and Apple Developer account)
+
+### Installation Instructions
+
+#### Android
+1. Download the `ExpenseTracker-Android-*.apk` file from the latest release
+2. Enable "Install from unknown sources" in your Android settings
+3. Install the APK file
+
+#### Windows
+1. Download the `ExpenseTracker-Windows-*.zip` file from the latest release
+2. Extract the ZIP file to your desired location
+3. Run `ExpenseTracker.Maui.exe` to start the application
+
+#### iOS/macOS
+iOS and macOS apps require building from source due to Apple's code signing requirements:
+```bash
+# Build for iOS
+dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-ios --configuration Release
+
+# Build for macCatalyst
+dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-maccatalyst --configuration Release
+```
+
 ## 🏗️ Architecture
 
 ### Technology Stack
-- **.NET 8.0**: Latest stable framework with enhanced performance
+- **.NET 9.0**: Latest framework with enhanced performance and features
 - **.NET MAUI**: Cross-platform native application framework with XAML UI
 - **CommunityToolkit.Mvvm**: Modern MVVM implementation with source generators
 - **Native XAML Controls**: Platform-optimized UI components (Grid, StackLayout, CollectionView, etc.)
@@ -175,41 +212,54 @@ builder.Services.AddTransient<ViewModels.InvoicesViewModel>();
 
 ## 🚀 Deployment
 
-### Mobile Applications
+### Automated Releases (CD Pipeline)
+The project includes automated Continuous Deployment that creates releases with pre-built applications:
+
+- **🤖 Automatic Builds**: Every push to main triggers multi-platform builds
+- **📦 Artifact Publishing**: APK and Windows apps are automatically packaged
+- **🏷️ Version Tagging**: Automatic semantic versioning with build numbers
+- **📋 Release Notes**: Auto-generated release documentation
+- **⬇️ Easy Downloads**: Direct download links for all supported platforms
+
+### Manual Build Commands
 ```bash
 # Android APK
-dotnet publish ExpenseTracker.Maui -f net8.0-android -c Release
+dotnet publish ExpenseTracker.Maui -f net9.0-android -c Release
 
 # iOS IPA (macOS required)
-dotnet publish ExpenseTracker.Maui -f net8.0-ios -c Release
+dotnet publish ExpenseTracker.Maui -f net9.0-ios -c Release
 
-# Windows MSIX
-dotnet publish ExpenseTracker.Maui -f net8.0-windows10.0.19041.0 -c Release
+# Windows App
+dotnet publish ExpenseTracker.Maui -f net9.0-windows10.0.19041.0 -c Release
 
 # macOS App Bundle
-dotnet publish ExpenseTracker.Maui -f net8.0-maccatalyst -c Release
+dotnet publish ExpenseTracker.Maui -f net9.0-maccatalyst -c Release
 ```
 
 ## 🔄 CI/CD Pipeline
 
-The project includes a comprehensive GitHub Actions CI pipeline:
+The project includes a comprehensive GitHub Actions CI/CD pipeline with automated releases:
 
-### Build Matrix
-- **Linux**: Shared library builds and Android compilation
-- **Windows**: Windows MAUI application builds  
-- **macOS**: iOS and Mac Catalyst builds
+### Continuous Integration (CI)
+- **Build Matrix**: Multi-platform builds (Linux, Windows, macOS)
+- **Quality Gates**: Code formatting, static analysis, and security scanning
+- **Test Execution**: Automated test suite with coverage reporting
+- **Artifact Validation**: Ensures all platforms build successfully
 
-### Quality & Security
-- **Code Formatting**: Automated `dotnet format` validation
-- **Security Scanning**: CodeQL analysis for vulnerability detection
-- **Dependency Updates**: Weekly automated dependency monitoring
-- **Build Caching**: Cross-platform build performance optimization
+### Continuous Deployment (CD)
+- **Automated Releases**: Creates GitHub releases on main branch pushes
+- **Version Management**: Semantic versioning with automatic tagging (v1.0.x)
+- **Artifact Publishing**: 
+  - Android APK files for direct installation
+  - Windows application packages (ZIP)
+  - Release assets with installation instructions
+- **Release Documentation**: Auto-generated release notes with build information
 
-### Pipeline Features
-- Multi-platform build validation on every PR
-- Artifact preservation for test results
-- Automated security vulnerability detection
-- Platform-specific workload management
+### Security & Quality
+- **CodeQL Analysis**: Advanced security vulnerability detection
+- **Dependency Scanning**: Automated security advisory monitoring
+- **Code Formatting**: Enforced code style consistency
+- **Build Caching**: Optimized build performance across platforms
 
 ## 🤝 Contributing
 
