@@ -1,23 +1,42 @@
-# Expense Tracker - .NET MAUI Native Edition
+# Expense Tracker - .NET MAUI Application
 
 [![CI/CD Pipeline](https://github.com/jdavidtorres/expense-tracker-app/actions/workflows/ci.yml/badge.svg)](https://github.com/jdavidtorres/expense-tracker-app/actions/workflows/ci.yml)
 [![Security Scan](https://github.com/jdavidtorres/expense-tracker-app/actions/workflows/security.yml/badge.svg)](https://github.com/jdavidtorres/expense-tracker-app/actions/workflows/security.yml)
 [![Latest Release](https://img.shields.io/github/v/release/jdavidtorres/expense-tracker-app?include_prereleases)](https://github.com/jdavidtorres/expense-tracker-app/releases)
 [![License](https://img.shields.io/github/license/jdavidtorres/expense-tracker-app)](LICENSE)
-[![.NET Version](https://img.shields.io/badge/.NET-9.0-blue)](https://dotnet.microsoft.com/download/dotnet/9.0)
+[![.NET Version](https://img.shields.io/badge/.NET-8.0-blue)](https://dotnet.microsoft.com/download/dotnet/8.0)
 
-A comprehensive cross-platform expense tracking application built with pure .NET MAUI and native XAML, providing native mobile and desktop experiences with modern MVVM architecture.
+A cross-platform expense tracking application built with .NET MAUI, featuring subscription and invoice management with a clean MVVM architecture.
 
 ## 🚀 Features
 
 - **Cross-Platform Native Apps**: Native apps for Android, iOS, Windows, and macOS with XAML UI
 - **Modern MVVM Architecture**: Built with CommunityToolkit.Mvvm and data binding
-- **Flyout Navigation**: Professional hamburger menu navigation following Microsoft design guidelines
+- **Shell Navigation**: Modern app navigation following Microsoft design guidelines
 - **Subscription Management**: Track recurring expenses with automated billing cycle calculations
 - **Invoice Processing**: Upload and categorize one-time expenses and documents
 - **Financial Dashboard**: Interactive summaries and analytics for expense insights
 - **Real-time API Integration**: Cloud-based REST API communication for data synchronization
 - **Native Performance**: Platform-optimized performance with native MAUI controls
+
+## 📁 Project Structure
+
+This is a **single .NET MAUI project** following the standard template structure:
+
+```
+ExpenseTracker/
+├── Models/                 # Data models (Expense, Subscription, Invoice, etc.)
+├── Services/              # API services (ExpenseService)
+├── ViewModels/            # MVVM ViewModels with CommunityToolkit.Mvvm
+├── Views/                 # XAML pages (Dashboard, Subscriptions, Invoices)
+├── Resources/             # App resources (images, fonts, styles)
+├── Platforms/             # Platform-specific code
+├── App.xaml               # Application definition
+├── AppShell.xaml          # Shell navigation structure
+├── MainPage.xaml          # Main page (if needed)
+├── MauiProgram.cs         # App configuration and DI setup
+└── ExpenseTracker.csproj  # Project file
+```
 
 ## 📱 Download & Installation
 
@@ -38,16 +57,16 @@ Download the latest pre-built applications from our [Releases](https://github.co
 #### Windows
 1. Download the `ExpenseTracker-Windows-*.zip` file from the latest release
 2. Extract the ZIP file to your desired location
-3. Run `ExpenseTracker.Maui.exe` to start the application
+3. Run `ExpenseTracker.exe` to start the application
 
 #### iOS/macOS
 iOS and macOS apps require building from source due to Apple's code signing requirements:
 ```bash
 # Build for iOS
-dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-ios --configuration Release
+dotnet build ExpenseTracker/ExpenseTracker.csproj -f net8.0-ios --configuration Release
 
 # Build for macCatalyst
-dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-maccatalyst --configuration Release
+dotnet build ExpenseTracker/ExpenseTracker.csproj -f net8.0-maccatalyst --configuration Release
 ```
 
 ## 🏗️ Architecture
@@ -60,38 +79,10 @@ dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-maccatalys
 - **Shell Navigation**: Modern navigation patterns with flyout menu
 - **HttpClient**: REST API communication with dependency injection
 
-### Project Structure
-```
-ExpenseTracker/
-├── ExpenseTracker.Shared/           # Shared business logic
-│   ├── Models/                      # Data models and entities
-│   │   ├── Expense.cs              # Base expense model
-│   │   ├── Subscription.cs         # Recurring subscription model
-│   │   ├── Invoice.cs              # One-time invoice model
-│   │   └── Summary.cs              # Financial summary model
-│   └── Services/                    # API communication services
-│       └── ExpenseService.cs       # HTTP client service
-├── ExpenseTracker.Maui/            # Native cross-platform app
-│   ├── Views/                       # XAML pages
-│   │   ├── DashboardPage.xaml      # Main dashboard view
-│   │   ├── SubscriptionsPage.xaml  # Subscription management
-│   │   └── InvoicesPage.xaml       # Invoice management
-│   ├── ViewModels/                  # MVVM ViewModels
-│   │   ├── BaseViewModel.cs        # Shared ViewModel base
-│   │   ├── DashboardViewModel.cs   # Dashboard logic
-│   │   ├── SubscriptionsViewModel.cs # Subscription logic
-│   │   └── InvoicesViewModel.cs    # Invoice logic
-│   ├── Platforms/                   # Platform-specific code
-│   ├── Resources/                   # App icons, images, fonts
-│   ├── AppShell.xaml               # Navigation structure
-│   └── MauiProgram.cs              # App configuration and DI
-└── ExpenseTracker.sln              # Visual Studio solution
-```
-
 ## 🛠️ Development Setup
 
 ### Prerequisites
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/) with MAUI workload
 - [.NET MAUI workload](https://docs.microsoft.com/dotnet/maui/)
 
@@ -116,16 +107,16 @@ dotnet build
 #### MAUI Native Applications
 ```bash
 # Windows (WinUI)
-dotnet run --project ExpenseTracker.Maui --framework net9.0-windows10.0.19041.0
+dotnet run --project ExpenseTracker --framework net8.0-windows10.0.19041.0
 
 # Android (requires Android SDK)
-dotnet run --project ExpenseTracker.Maui --framework net9.0-android
+dotnet run --project ExpenseTracker --framework net8.0-android
 
 # iOS (requires Xcode on macOS)
-dotnet run --project ExpenseTracker.Maui --framework net9.0-ios
+dotnet run --project ExpenseTracker --framework net8.0-ios
 
 # macOS (Mac Catalyst)
-dotnet run --project ExpenseTracker.Maui --framework net9.0-maccatalyst
+dotnet run --project ExpenseTracker --framework net8.0-maccatalyst
 ```
 
 ## 📱 Platform Support
@@ -224,16 +215,16 @@ The project includes automated Continuous Deployment that creates releases with 
 ### Manual Build Commands
 ```bash
 # Android APK
-dotnet publish ExpenseTracker.Maui -f net9.0-android -c Release
+dotnet publish ExpenseTracker -f net8.0-android -c Release
 
 # iOS IPA (macOS required)
-dotnet publish ExpenseTracker.Maui -f net9.0-ios -c Release
+dotnet publish ExpenseTracker -f net8.0-ios -c Release
 
 # Windows App
-dotnet publish ExpenseTracker.Maui -f net9.0-windows10.0.19041.0 -c Release
+dotnet publish ExpenseTracker -f net8.0-windows10.0.19041.0 -c Release
 
 # macOS App Bundle
-dotnet publish ExpenseTracker.Maui -f net9.0-maccatalyst -c Release
+dotnet publish ExpenseTracker -f net8.0-maccatalyst -c Release
 ```
 
 ## 🔄 CI/CD Pipeline
@@ -338,7 +329,7 @@ public partial class SubscriptionsViewModel : BaseViewModel
 ### XAML Data Binding
 ```xml
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             x:Class="ExpenseTracker.Maui.Views.DashboardPage">
+             x:Class="ExpenseTracker.Views.DashboardPage">
     
     <Grid>
         <ActivityIndicator IsVisible="{Binding IsLoading}" />
