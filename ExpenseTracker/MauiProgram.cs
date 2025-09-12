@@ -1,7 +1,7 @@
-using ExpenseTracker.Shared.Services;
+using ExpenseTracker.Services;
 using Microsoft.Extensions.Logging;
 
-namespace ExpenseTracker.Maui;
+namespace ExpenseTracker;
 
 public static class MauiProgram
 {

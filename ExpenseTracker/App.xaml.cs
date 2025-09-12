@@ -1,4 +1,4 @@
-namespace ExpenseTracker.Maui;
+namespace ExpenseTracker;
 
 public partial class App : Application
 {

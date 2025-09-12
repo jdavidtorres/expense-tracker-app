@@ -1,6 +1,6 @@
 using ExpenseTracker.Maui.ViewModels;
 
-namespace ExpenseTracker.Maui.Views;
+namespace ExpenseTracker.Views;
 
 public partial class DashboardPage : ContentPage
 {

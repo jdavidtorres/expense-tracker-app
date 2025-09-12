@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace ExpenseTracker.Shared.Models;
+namespace ExpenseTracker.Models;
 
 public class Invoice : Expense
 {

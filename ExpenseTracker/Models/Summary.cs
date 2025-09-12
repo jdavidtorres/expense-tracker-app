@@ -1,4 +1,4 @@
-namespace ExpenseTracker.Shared.Models;
+namespace ExpenseTracker.Models;
 
 public class ExpensesSummary
 {

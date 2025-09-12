@@ -1,9 +1,9 @@
 using System.Text;
 using System.Text.Json;
-using ExpenseTracker.Shared.Models;
+using ExpenseTracker.Models;
 using Microsoft.Extensions.Logging;
 
-namespace ExpenseTracker.Shared.Services;
+namespace ExpenseTracker.Services;
 
 public class ExpenseService
 {

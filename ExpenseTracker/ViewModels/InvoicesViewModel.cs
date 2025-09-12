@@ -1,10 +1,10 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ExpenseTracker.Shared.Models;
-using ExpenseTracker.Shared.Services;
+using ExpenseTracker.Models;
+using ExpenseTracker.Services;
 
-namespace ExpenseTracker.Maui.ViewModels;
+namespace ExpenseTracker.ViewModels;
 
 public partial class InvoicesViewModel : BaseViewModel
 {

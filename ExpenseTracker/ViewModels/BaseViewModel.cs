@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace ExpenseTracker.Maui.ViewModels;
+namespace ExpenseTracker.ViewModels;
 
 public partial class BaseViewModel : ObservableObject
 {

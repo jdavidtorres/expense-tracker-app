@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:ExpenseTracker.Maui.ViewModels"
-             x:Class="ExpenseTracker.Maui.Views.InvoicesPage"
-             x:DataType="vm:InvoicesViewModel"
+             xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+             x:Class="ExpenseTracker.Views.SubscriptionsPage"
+             x:DataType="vm:SubscriptionsViewModel"
              Title="{Binding Title}">
 
     <StackLayout Padding="20" Spacing="20">
@@ -24,34 +24,34 @@
         </Frame>
 
         <!-- Header -->
-        <Label Text="📄 Invoices" 
+        <Label Text="💳 Subscriptions" 
                FontSize="24" 
                FontAttributes="Bold" 
                HorizontalOptions="Center" />
 
-        <!-- Invoices List -->
-        <CollectionView ItemsSource="{Binding Invoices}">
+        <!-- Subscriptions List -->
+        <CollectionView ItemsSource="{Binding Subscriptions}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Frame BackgroundColor="LightYellow" Padding="15" Margin="0,5" CornerRadius="8">
+                    <Frame BackgroundColor="LightBlue" Padding="15" Margin="0,5" CornerRadius="8">
                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
                             <Label Grid.Row="0" Grid.Column="0" Text="{Binding Name}" FontSize="16" FontAttributes="Bold" />
                             <Label Grid.Row="1" Grid.Column="0" Text="{Binding Category}" FontSize="12" TextColor="Gray" />
-                            <Label Grid.Row="2" Grid.Column="0" Text="{Binding DueDate, StringFormat='Due: {0:MMM dd, yyyy}'}" FontSize="12" TextColor="Red" />
+                            <Label Grid.Row="2" Grid.Column="0" Text="{Binding BillingCycle, StringFormat='Billed {0}'}" FontSize="12" TextColor="Gray" />
                             <Label Grid.Row="0" Grid.Column="1" Grid.RowSpan="3" Text="{Binding Amount, StringFormat='${0:F2}'}" 
-                                   FontSize="18" TextColor="Green" FontAttributes="Bold" VerticalOptions="Center" />
+                                   FontSize="18" TextColor="Blue" FontAttributes="Bold" VerticalOptions="Center" />
                         </Grid>
                     </Frame>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
             <CollectionView.EmptyView>
-                <Label Text="No invoices found" HorizontalOptions="Center" TextColor="Gray" FontSize="16" />
+                <Label Text="No subscriptions found" HorizontalOptions="Center" TextColor="Gray" FontSize="16" />
             </CollectionView.EmptyView>
         </CollectionView>
 
         <!-- Refresh Button -->
         <Button Text="🔄 Refresh" 
-                Command="{Binding LoadInvoicesCommand}"
+                Command="{Binding LoadSubscriptionsCommand}"
                 BackgroundColor="ForestGreen" 
                 TextColor="White" 
                 Padding="15" 
