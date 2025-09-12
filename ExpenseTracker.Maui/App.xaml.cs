@@ -1,4 +1,4 @@
-﻿namespace ExpenseTracker.Maui;
+namespace ExpenseTracker.Maui;
 
 public partial class App : Application
 {
@@ -6,6 +6,6 @@ public partial class App : Application
 	{
 		InitializeComponent();
 
-		MainPage = new MainPage();
+		MainPage = new AppShell();
 	}
 }

@@ -1,57 +1,98 @@
 # Expense Tracker - AI Coding Guidelines
 
 ## Architecture Overview
-Cross-platform .NET MAUI Blazor Hybrid application for tracking subscriptions and invoices, with additional Blazor Web support.
+Cross-platform .NET MAUI application for tracking subscriptions and invoices with native XAML UI and MVVM architecture.
 
 **Key Components:**
 - `ExpenseService` - Central service for API communication to `localhost:8083` using HttpClient
-- Blazor components with shared logic across platforms
+- XAML pages with MVVM pattern using CommunityToolkit.Mvvm
 - Data models: `Expense`, `Subscription`, `Invoice` with inheritance
-- Dashboard with expense summaries and category breakdowns
-- Native platform integration through .NET MAUI
+- Dashboard with expense summaries and category breakdowns  
+- Native platform integration through .NET MAUI Shell navigation
 
 ## Core Patterns
 
-### Blazor Component Structure
+### XAML Page Structure with MVVM
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ExpenseTracker.Maui.ViewModels"
+             x:Class="ExpenseTracker.Maui.Views.SubscriptionsPage"
+             Title="Subscriptions">
+    
+    <ContentPage.BindingContext>
+        <vm:SubscriptionsViewModel />
+    </ContentPage.BindingContext>
+
+    <Grid>
+        <ActivityIndicator IsVisible="{Binding IsLoading}" IsRunning="{Binding IsLoading}" />
+        
+        <CollectionView ItemsSource="{Binding Subscriptions}" IsVisible="{Binding IsNotLoading}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="16">
+                        <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>
+```
+
+### ViewModel with CommunityToolkit.Mvvm
 ```csharp
-@page "/subscriptions"
-@using ExpenseTracker.Models
-@using ExpenseTracker.Services
-@inject ExpenseService ExpenseService
-@inject IJSRuntime JSRuntime
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using ExpenseTracker.Shared.Models;
+using ExpenseTracker.Shared.Services;
+using System.Collections.ObjectModel;
 
-<PageTitle>Subscriptions</PageTitle>
+namespace ExpenseTracker.Maui.ViewModels;
 
-<div class="container-fluid">
-    <h2>Subscriptions</h2>
-    <!-- Component content -->
-</div>
+public partial class SubscriptionsViewModel : BaseViewModel
+{
+    private readonly ExpenseService _expenseService;
 
-@code {
-    private List<Subscription> subscriptions = new();
-    private bool loading = true;
-    private string? error;
+    [ObservableProperty]
+    private ObservableCollection<Subscription> subscriptions = new();
 
-    protected override async Task OnInitializedAsync()
+    [ObservableProperty]
+    private bool isLoading = true;
+
+    [ObservableProperty]
+    private string? errorMessage;
+
+    public SubscriptionsViewModel(ExpenseService expenseService)
     {
-        await LoadSubscriptions();
+        _expenseService = expenseService;
     }
 
-    private async Task LoadSubscriptions()
+    [RelayCommand]
+    private async Task LoadSubscriptionsAsync()
     {
         try
         {
-            loading = true;
-            subscriptions = await ExpenseService.GetSubscriptionsAsync();
+            IsLoading = true;
+            ErrorMessage = null;
+            var data = await _expenseService.GetSubscriptionsAsync();
+            Subscriptions = new ObservableCollection<Subscription>(data);
         }
         catch (Exception ex)
         {
-            error = $"Failed to load subscriptions: {ex.Message}";
+            ErrorMessage = $"Failed to load subscriptions: {ex.Message}";
         }
         finally
         {
-            loading = false;
+            IsLoading = false;
         }
+    }
+
+    [RelayCommand]
+    private async Task DeleteSubscriptionAsync(string id)
+    {
+        // Implementation
     }
 }
 ```
@@ -70,14 +111,24 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
             });
 
-        builder.Services.AddMauiBlazorWebView();
+        // Configure HttpClient for API calls
         builder.Services.AddHttpClient<ExpenseService>(client =>
         {
             client.BaseAddress = new Uri("http://localhost:8083/api/");
         });
 
+        // Register pages
+        builder.Services.AddTransient<MainPage>();
+        builder.Services.AddTransient<Views.DashboardPage>();
+        builder.Services.AddTransient<Views.SubscriptionsPage>();
+        builder.Services.AddTransient<Views.InvoicesPage>();
+
+        // Register ViewModels
+        builder.Services.AddTransient<ViewModels.DashboardViewModel>();
+        builder.Services.AddTransient<ViewModels.SubscriptionsViewModel>();
+        builder.Services.AddTransient<ViewModels.InvoicesViewModel>();
+
 #if DEBUG
-        builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
 #endif
 
@@ -86,61 +137,50 @@ public static class MauiProgram
 }
 ```
 
-### HttpClient Service Pattern
+### BaseViewModel Pattern
 ```csharp
-public class ExpenseService
+using CommunityToolkit.Mvvm.ComponentModel;
+
+namespace ExpenseTracker.Maui.ViewModels;
+
+public abstract partial class BaseViewModel : ObservableObject
 {
-    private readonly HttpClient _httpClient;
-    private readonly JsonSerializerOptions _jsonOptions;
+    [ObservableProperty]
+    private bool isLoading;
 
-    public ExpenseService(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
-        };
-    }
+    [ObservableProperty]
+    private string? title;
 
-    public async Task<List<Subscription>> GetSubscriptionsAsync()
-    {
-        try
-        {
-            var response = await _httpClient.GetAsync("subscriptions");
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<List<Subscription>>(json, _jsonOptions) ?? new();
-        }
-        catch (Exception ex)
-        {
-            // Log error
-            return new List<Subscription>();
-        }
-    }
+    public bool IsNotLoading => !IsLoading;
 }
 ```
 
-### Error Handling
-```csharp
-private async Task<T?> HandleApiCall<T>(Func<Task<T>> apiCall, string operation)
-{
-    try
-    {
-        return await apiCall();
-    }
-    catch (HttpRequestException ex)
-    {
-        Logger.LogError(ex, "HTTP error in {Operation}", operation);
-        throw new ApplicationException($"Network error in {operation}");
-    }
-    catch (Exception ex)
-    {
-        Logger.LogError(ex, "Unexpected error in {Operation}", operation);
-        throw;
-    }
-}
+### Shell Navigation Configuration
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:local="clr-namespace:ExpenseTracker.Maui.Views"
+       x:Class="ExpenseTracker.Maui.AppShell"
+       Title="Expense Tracker">
+
+    <TabBar>
+        <ShellContent Title="Dashboard" 
+                      ContentTemplate="{DataTemplate local:DashboardPage}"
+                      Route="dashboard"
+                      Icon="home.png" />
+
+        <ShellContent Title="Subscriptions"
+                      ContentTemplate="{DataTemplate local:SubscriptionsPage}"
+                      Route="subscriptions" 
+                      Icon="credit_card.png" />
+
+        <ShellContent Title="Invoices"
+                      ContentTemplate="{DataTemplate local:InvoicesPage}"
+                      Route="invoices"
+                      Icon="file_text.png" />
+    </TabBar>
+</Shell>
 ```
 
 ### Platform-Specific Code
@@ -164,25 +204,30 @@ private async Task<T?> HandleApiCall<T>(Func<Task<T>> apiCall, string operation)
 - Use record types for immutable data models
 - Follow SOLID principles and dependency injection
 
-### Blazor Best Practices
-- Use @code blocks for component logic
-- Implement IDisposable for cleanup when needed
-- Use StateHasChanged() sparingly and only when necessary
-- Prefer one-way data binding with event callbacks
+### MVVM Best Practices
+- Use CommunityToolkit.Mvvm source generators for ObservableProperty and RelayCommand
+- Implement BaseViewModel for common properties like IsLoading
+- Use ObservableCollection for collections that update the UI
+- Prefer dependency injection for ViewModels
 
 ```csharp
-// Proper component lifecycle
-public void Dispose()
+// Proper ViewModel lifecycle with commands
+public partial class SubscriptionsViewModel : BaseViewModel
 {
-    // Clean up resources, cancel tokens, etc.
-}
+    [ObservableProperty]
+    private ObservableCollection<Subscription> subscriptions = new();
 
-// Event handling pattern
-[Parameter] public EventCallback<Subscription> OnSubscriptionChanged { get; set; }
+    [RelayCommand]
+    private async Task RefreshAsync()
+    {
+        await LoadSubscriptionsAsync();
+    }
 
-private async Task NotifySubscriptionChanged()
-{
-    await OnSubscriptionChanged.InvokeAsync(subscription);
+    [RelayCommand]
+    private async Task AddSubscriptionAsync()
+    {
+        await Shell.Current.GoToAsync("add-subscription");
+    }
 }
 ```
 
@@ -220,127 +265,149 @@ dotnet build -f net9.0-ios
 dotnet build -f net9.0-windows
 dotnet build -f net9.0-maccatalyst
 
-# Build Blazor Web app
-dotnet build --project ExpenseTracker.Web
-
 # Run in development
 dotnet run --project ExpenseTracker.Maui
-dotnet run --project ExpenseTracker.Web
 ```
 
 ### Key Files to Reference
-- `Models/Expense.cs` - Data models and interfaces
-- `Services/ExpenseService.cs` - API service implementation
-- `Components/SubscriptionsList.razor` - CRUD example component
-- `Components/Dashboard.razor` - Data loading and chart patterns
+- `Shared/Models/Expense.cs` - Data models and interfaces
+- `Shared/Services/ExpenseService.cs` - API service implementation
+- `Views/SubscriptionsPage.xaml` - XAML page example
+- `ViewModels/SubscriptionsViewModel.cs` - MVVM ViewModel example
+- `ViewModels/BaseViewModel.cs` - Base ViewModel pattern
 
 ## Specific Conventions
 
-### UI Components
-- Bootstrap 5 classes for styling across all platforms
-- Lucide icons: Reference via CDN or npm package
-- Toast notifications using built-in Blazor patterns
-- Consistent loading/error state handling
+### XAML UI Components
+- Native MAUI controls (Button, Label, Entry, CollectionView, etc.)
+- Grid and StackLayout for responsive layouts
+- ActivityIndicator for loading states
+- Frame and Border for visual grouping
+- Shell navigation for page transitions
 
 ### Data Management
 - All API calls through ExpenseService with HttpClient
 - Use async/await for all data operations
-- Proper error boundaries with fallback UI
-- Update component state after successful operations
+- ObservableCollection for bindable collections
+- Proper error handling with try-catch patterns
+- Update ViewModel properties to trigger UI updates
 
 ### Forms and Validation
-- Use EditForm with DataAnnotations validation
-- Implement proper two-way data binding
-- Reset forms after successful operations
+- Use Entry controls with data binding
+- Implement validation in ViewModels or through DataAnnotations
+- Use RelayCommand for form submission
+- Reset form state after successful operations
 - Support both create and edit scenarios
 
-```razor
-<EditForm Model="subscription" OnValidSubmit="HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="mb-3">
-        <label class="form-label">Name</label>
-        <InputText @bind-Value="subscription.Name" class="form-control" />
-        <ValidationMessage For="() => subscription.Name" />
-    </div>
-
-    <button type="submit" class="btn btn-primary">Save</button>
-</EditForm>
+```xml
+<StackLayout Padding="16">
+    <Entry Text="{Binding SubscriptionName}" 
+           Placeholder="Subscription Name" />
+    
+    <Entry Text="{Binding Amount, StringFormat='{0:C}'}" 
+           Placeholder="Amount"
+           Keyboard="Numeric" />
+    
+    <Button Text="Save" 
+            Command="{Binding SaveCommand}" 
+            IsEnabled="{Binding IsNotLoading}" />
+</StackLayout>
 ```
 
 ### Navigation
-- Use MAUI Shell navigation for mobile/desktop apps
-- Use Blazor Router for web navigation
-- Implement proper deep linking support
-- Handle back button behavior appropriately
+- Use Shell.Current.GoToAsync() for programmatic navigation
+- Define routes in AppShell.xaml
+- Pass parameters using query strings or navigation parameters
+- Handle back button behavior through Shell navigation
+
+```csharp
+// Navigate with parameters
+await Shell.Current.GoToAsync($"edit-subscription?id={subscription.Id}");
+
+// Navigate and pass complex objects
+var parameters = new Dictionary<string, object>
+{
+    ["subscription"] = subscription
+};
+await Shell.Current.GoToAsync("edit-subscription", parameters);
+```
 
 ## Common Patterns
 
 ### Loading and Error States
-```razor
-@if (loading)
-{
-    <div class="d-flex justify-content-center">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
-}
-else if (!string.IsNullOrEmpty(error))
-{
-    <div class="alert alert-danger" role="alert">
-        @error
-    </div>
-}
-else
-{
+```xml
+<Grid>
+    <!-- Loading indicator -->
+    <ActivityIndicator IsVisible="{Binding IsLoading}" 
+                       IsRunning="{Binding IsLoading}" 
+                       VerticalOptions="Center" />
+    
+    <!-- Error message -->
+    <Frame IsVisible="{Binding HasError}" 
+           BackgroundColor="Red" 
+           Padding="16" 
+           Margin="16">
+        <Label Text="{Binding ErrorMessage}" 
+               TextColor="White" />
+    </Frame>
+    
     <!-- Content -->
-}
+    <ScrollView IsVisible="{Binding IsNotLoading}">
+        <!-- Your content here -->
+    </ScrollView>
+</Grid>
 ```
 
-### CRUD Operations
+### CRUD Operations in ViewModel
 ```csharp
+[RelayCommand]
 private async Task SaveSubscriptionAsync()
 {
     try
     {
-        loading = true;
+        IsLoading = true;
+        ErrorMessage = null;
 
-        if (isNewSubscription)
+        if (IsNewSubscription)
         {
-            await ExpenseService.CreateSubscriptionAsync(subscription);
+            await _expenseService.CreateSubscriptionAsync(CurrentSubscription);
         }
         else
         {
-            await ExpenseService.UpdateSubscriptionAsync(subscription);
+            await _expenseService.UpdateSubscriptionAsync(CurrentSubscription);
         }
 
-        await LoadSubscriptions();
-        NavigateToList();
+        await LoadSubscriptionsAsync();
+        await Shell.Current.GoToAsync("..");
     }
     catch (Exception ex)
     {
-        error = $"Failed to save subscription: {ex.Message}";
+        ErrorMessage = $"Failed to save subscription: {ex.Message}";
     }
     finally
     {
-        loading = false;
+        IsLoading = false;
     }
 }
 
-private async Task DeleteSubscriptionAsync(string id)
+[RelayCommand]
+private async Task DeleteSubscriptionAsync(Subscription subscription)
 {
-    if (await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this subscription?"))
+    var result = await Application.Current.MainPage.DisplayAlert(
+        "Confirm Delete", 
+        $"Are you sure you want to delete {subscription.Name}?", 
+        "Yes", "No");
+        
+    if (result)
     {
         try
         {
-            await ExpenseService.DeleteSubscriptionAsync(id);
-            await LoadSubscriptions();
+            await _expenseService.DeleteSubscriptionAsync(subscription.Id);
+            Subscriptions.Remove(subscription);
         }
         catch (Exception ex)
         {
-            error = $"Failed to delete subscription: {ex.Message}";
+            ErrorMessage = $"Failed to delete subscription: {ex.Message}";
         }
     }
 }
@@ -349,10 +416,7 @@ private async Task DeleteSubscriptionAsync(string id)
 ## Dependencies
 - **.NET 9.0** - Base framework
 - **.NET MAUI** - Cross-platform native app development
-- **Blazor** - Interactive web UI components
-- **Bootstrap 5** - CSS framework for responsive design
-- **Lucide Icons** - Modern icon library
-- **Chart.js** - Data visualization (via JS interop)
+- **CommunityToolkit.Mvvm** - MVVM source generators and base classes
 - **System.Text.Json** - JSON serialization
 - **Microsoft.Extensions.Http** - HttpClient dependency injection
 - **Microsoft.Extensions.Logging** - Logging infrastructure
@@ -380,8 +444,3 @@ private async Task DeleteSubscriptionAsync(string id)
 - Package.appxmanifest configuration
 - File associations for invoice files
 - Windows Hello integration possibilities
-
-### Web
-- Progressive Web App (PWA) capabilities
-- Browser storage limitations
-- CORS configuration for API calls

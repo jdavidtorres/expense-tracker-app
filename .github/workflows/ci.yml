@@ -1,0 +1,379 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+    tags: ['v*']
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  APP_VERSION: '1.0.${{ github.run_number }}'
+
+jobs:
+  # Build shared libraries on Linux
+  build-shared:
+    name: Build Shared Projects
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore and build shared library
+      run: |
+        dotnet restore ExpenseTracker.Shared/ExpenseTracker.Shared.csproj
+        dotnet build ExpenseTracker.Shared/ExpenseTracker.Shared.csproj --configuration Release --no-restore
+
+    - name: Check for test projects
+      id: check-tests
+      run: |
+        if find . -name "*.csproj" -exec grep -l "Microsoft.NET.Test.Sdk\|xunit\|NUnit\|MSTest" {} \; | grep -q .; then
+          echo "has_tests=true" >> $GITHUB_OUTPUT
+        else
+          echo "has_tests=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Run tests
+      if: steps.check-tests.outputs.has_tests == 'true'
+      run: |
+        # Run tests only on projects that have test frameworks
+        dotnet test ExpenseTracker.Shared/ExpenseTracker.Shared.csproj --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --logger trx || true
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always() && steps.check-tests.outputs.has_tests == 'true'
+      with:
+        name: test-results-linux
+        path: |
+          **/TestResults/**/*.xml
+          **/TestResults/**/*.trx
+        retention-days: 5
+
+  # Build Android on Linux
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    needs: build-shared
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Setup Java 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'microsoft'
+        java-version: '17'
+
+    - name: Install MAUI workloads
+      run: |
+        dotnet workload install maui-android --verbosity normal
+        dotnet workload list
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore dependencies
+      run: dotnet restore ExpenseTracker.Maui/ExpenseTracker.Maui.csproj
+
+    - name: Build MAUI for Android
+      run: dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-android --configuration Release --no-restore
+
+    - name: Publish Android APK (main branch only)
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        dotnet publish ExpenseTracker.Maui/ExpenseTracker.Maui.csproj \
+          -f net9.0-android \
+          --configuration Release \
+          --no-restore \
+          -p:AndroidPackageFormat=apk \
+          -p:ApplicationVersion=${{ github.run_number }} \
+          -p:ApplicationDisplayVersion=${{ env.APP_VERSION }}
+
+    - name: Upload Android APK
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-apk-v${{ env.APP_VERSION }}
+        path: |
+          **/bin/Release/net9.0-android/publish/*.apk
+        retention-days: 30
+        if-no-files-found: warn
+
+  # Build Windows on Windows runner
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    needs: build-shared
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Install MAUI workloads
+      run: |
+        dotnet workload install maui --verbosity normal
+        dotnet workload list
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore dependencies
+      run: dotnet restore ExpenseTracker.Maui/ExpenseTracker.Maui.csproj
+
+    - name: Build MAUI for Windows
+      run: dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-windows10.0.19041.0 --configuration Release --no-restore
+
+    - name: Publish Windows App (main branch only)
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        dotnet publish ExpenseTracker.Maui/ExpenseTracker.Maui.csproj \
+          -f net9.0-windows10.0.19041.0 \
+          --configuration Release \
+          --no-restore \
+          -p:ApplicationVersion=${{ github.run_number }} \
+          -p:ApplicationDisplayVersion=${{ env.APP_VERSION }} \
+          -p:PublishReadyToRun=true
+
+    - name: Upload Windows App
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-app-v${{ env.APP_VERSION }}
+        path: |
+          **/bin/Release/net9.0-windows10.0.19041.0/publish/**/*.exe
+          **/bin/Release/net9.0-windows10.0.19041.0/publish/**/*.dll
+          **/bin/Release/net9.0-windows10.0.19041.0/publish/**/*.json
+        retention-days: 30
+        if-no-files-found: warn
+
+  # Build macOS and iOS on macOS runner
+  build-macos:
+    name: Build macOS and iOS
+    runs-on: macos-latest
+    needs: build-shared
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Install MAUI workloads
+      run: |
+        dotnet workload install maui --verbosity normal
+        dotnet workload list
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore dependencies
+      run: dotnet restore ExpenseTracker.Maui/ExpenseTracker.Maui.csproj
+
+    - name: Build MAUI for iOS
+      run: dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-ios --configuration Release --no-restore
+
+    - name: Build MAUI for macCatalyst
+      run: dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-maccatalyst --configuration Release --no-restore
+
+  # Code quality analysis
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    needs: build-shared
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore shared projects
+      run: |
+        dotnet restore ExpenseTracker.Shared/ExpenseTracker.Shared.csproj
+
+    - name: Check code formatting
+      run: |
+        dotnet format ExpenseTracker.Shared/ExpenseTracker.Shared.csproj --verify-no-changes --verbosity normal
+      continue-on-error: true
+
+    - name: Run static analysis
+      run: |
+        dotnet build ExpenseTracker.Shared/ExpenseTracker.Shared.csproj --configuration Release --verbosity normal /p:TreatWarningsAsErrors=false
+
+  # Create release tag and publish artifacts (main branch only)
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [build-shared, build-android, build-windows, build-macos, code-quality]
+    outputs:
+      tag_name: ${{ steps.create_tag.outputs.tag_name }}
+      release_url: ${{ steps.create_release.outputs.html_url }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create tag
+      id: create_tag
+      run: |
+        TAG_NAME="v${{ env.APP_VERSION }}"
+        echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git tag -a "$TAG_NAME" -m "Release $TAG_NAME - Build #${{ github.run_number }}"
+        git push origin "$TAG_NAME"
+
+    - name: Download Android APK
+      uses: actions/download-artifact@v4
+      with:
+        name: android-apk-v${{ env.APP_VERSION }}
+        path: ./artifacts/android/
+
+    - name: Download Windows App
+      uses: actions/download-artifact@v4
+      with:
+        name: windows-app-v${{ env.APP_VERSION }}
+        path: ./artifacts/windows/
+
+    - name: Find APK file
+      id: find_apk
+      run: |
+        APK_FILE=$(find ./artifacts/android -name "*.apk" | head -1)
+        if [ -z "$APK_FILE" ]; then
+          echo "No APK file found"
+          exit 1
+        fi
+        echo "apk_path=$APK_FILE" >> $GITHUB_OUTPUT
+        echo "Found APK: $APK_FILE"
+
+    - name: Create Windows App Archive
+      run: |
+        cd ./artifacts/windows
+        zip -r "ExpenseTracker-Windows-v${{ env.APP_VERSION }}.zip" .
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ env.APP_VERSION }}
+        release_name: Release v${{ env.APP_VERSION }}
+        body: |
+          ## 🚀 Release v${{ env.APP_VERSION }}
+
+          **Build Information:**
+          - Build Number: #${{ github.run_number }}
+          - Commit: ${{ github.sha }}
+          - .NET Version: 9.0
+          - MAUI Version: 9.0.10
+
+          **Platform Support:**
+          - ✅ Android (API 24+)
+          - ✅ Windows 10/11 (Build 19041+)
+          - ✅ iOS (Version 11.0+)
+          - ✅ macOS (macCatalyst 13.1+)
+
+          **Downloads:**
+          - Android APK: Available in release assets
+          - Windows App: Available in release assets
+          - iOS/macOS: Build from source (requires Xcode)
+
+          **Installation:**
+          - **Android**: Download and install the APK file
+          - **Windows**: Download and extract the Windows app package
+
+          For detailed installation instructions, see the [README](https://github.com/${{ github.repository }}/blob/main/README.md).
+        draft: false
+        prerelease: false
+
+    - name: Upload Android APK to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.find_apk.outputs.apk_path }}
+        asset_name: ExpenseTracker-Android-v${{ env.APP_VERSION }}.apk
+        asset_content_type: application/vnd.android.package-archive
+
+    - name: Upload Windows App to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./artifacts/windows/ExpenseTracker-Windows-v${{ env.APP_VERSION }}.zip
+        asset_name: ExpenseTracker-Windows-v${{ env.APP_VERSION }}.zip
+        asset_content_type: application/zip

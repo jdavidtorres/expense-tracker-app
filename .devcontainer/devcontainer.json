@@ -1,0 +1,31 @@
+{
+	"name": ".NET MAUI Expense Tracker",
+	"image": "mcr.microsoft.com/dotnet/sdk:9.0",
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:2": {
+			"installZsh": false,
+			"upgradePackages": true
+		}
+	},
+	"postCreateCommand": "dotnet workload install maui && dotnet restore ExpenseTracker.sln",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-dotnettools.csharp",
+				"ms-dotnettools.csdevkit",
+				"ms-dotnettools.vscode-dotnet-runtime",
+				"ms-vscode.vscode-json",
+				"GitHub.copilot",
+				"GitHub.copilot-chat",
+				"ms-azuretools.vscode-containers",
+				"GitHub.vscode-github-actions",
+				"GitHub.remotehub"
+			],
+			"settings": {
+				"dotnet.defaultSolution": "ExpenseTracker.sln"
+			}
+		}
+	},
+	"forwardPorts": [8083],
+	"remoteUser": "vscode"
+}
