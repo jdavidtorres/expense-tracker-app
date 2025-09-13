@@ -3,6 +3,7 @@
     x:Class="ExpenseTracker.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+<<<<<<< HEAD
     xmlns:views="clr-namespace:ExpenseTracker.Views"
     Title="Expense Tracker">
 
@@ -24,3 +25,99 @@
     </TabBar>
 
 </Shell>
+=======
+    xmlns:local="clr-namespace:ExpenseTracker.Views"
+    Title="Expense Tracker"
+    FlyoutBehavior="Flyout">
+
+    <!-- Flyout Header -->
+    <Shell.FlyoutHeader>
+        <Grid BackgroundColor="#2E86AB" HeightRequest="150" Padding="20">
+            <StackLayout VerticalOptions="Center">
+                <Label Text="💰" FontSize="48" HorizontalOptions="Center" TextColor="White" />
+                <Label Text="Expense Tracker" 
+                       FontSize="18" 
+                       FontAttributes="Bold" 
+                       HorizontalOptions="Center" 
+                       TextColor="White" />
+                <Label Text="Manage your subscriptions and invoices" 
+                       FontSize="12" 
+                       HorizontalOptions="Center" 
+                       TextColor="LightGray" />
+            </StackLayout>
+        </Grid>
+    </Shell.FlyoutHeader>
+
+    <!-- Main navigation items with FontImageSource icons -->
+    <FlyoutItem Title="Dashboard">
+        <FlyoutItem.Icon>
+            <FontImageSource FontFamily="Icons" Glyph="🏠" Color="#2E86AB" Size="24" />
+        </FlyoutItem.Icon>
+        <ShellContent ContentTemplate="{DataTemplate local:DashboardPage}" Route="dashboard" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Subscriptions">
+        <FlyoutItem.Icon>
+            <FontImageSource FontFamily="Icons" Glyph="💳" Color="#2E86AB" Size="24" />
+        </FlyoutItem.Icon>
+        <ShellContent ContentTemplate="{DataTemplate local:SubscriptionsPage}" Route="subscriptions" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Invoices">
+        <FlyoutItem.Icon>
+            <FontImageSource FontFamily="Icons" Glyph="📄" Color="#2E86AB" Size="24" />
+        </FlyoutItem.Icon>
+        <ShellContent ContentTemplate="{DataTemplate local:InvoicesPage}" Route="invoices" />
+    </FlyoutItem>
+
+    <!-- Footer for flyout -->
+    <Shell.FlyoutFooter>
+        <Grid BackgroundColor="#F5F5F5" Padding="20" HeightRequest="80">
+            <StackLayout Orientation="Horizontal" VerticalOptions="Center" HorizontalOptions="Center">
+                <Label Text="ℹ️" FontSize="16" VerticalOptions="Center" />
+                <Label Text="Version 1.0" 
+                       FontSize="12" 
+                       TextColor="Gray" 
+                       VerticalOptions="Center" />
+            </StackLayout>
+        </Grid>
+    </Shell.FlyoutFooter>
+
+    <!-- Modern styles for flyout following Microsoft's Fluent UI guidelines -->
+    <Shell.Resources>
+        <Style TargetType="FlyoutItem">
+            <Setter Property="Shell.BackgroundColor" Value="White" />
+            <Setter Property="Shell.ForegroundColor" Value="#2E86AB" />
+            <Setter Property="Shell.TitleColor" Value="#333333" />
+            <Setter Property="Shell.TabBarBackgroundColor" Value="White" />
+            <Setter Property="Shell.TabBarForegroundColor" Value="#2E86AB" />
+            <Setter Property="Shell.TabBarTitleColor" Value="#333333" />
+        </Style>
+        
+        <Style TargetType="ShellContent">
+            <Setter Property="Shell.BackgroundColor" Value="#F8F9FA" />
+        </Style>
+
+        <!-- Flyout item styling for modern look -->
+        <Style TargetType="Grid" x:Key="FlyoutItemLayoutStyle">
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="Transparent" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Selected">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="#E3F2FD" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </Shell.Resources>
+
+</Shell>
+>>>>>>> 95edd7384477a9a46f3d2218ed5d5b0eff5ce133

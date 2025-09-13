@@ -10,16 +10,20 @@ public partial class SubscriptionsViewModel : BaseViewModel
 {
     private readonly ExpenseService _expenseService;
 
+<<<<<<< HEAD
     [ObservableProperty]
     private ObservableCollection<Subscription> subscriptions = new();
 
     [ObservableProperty]
     private Subscription? selectedSubscription;
 
+=======
+>>>>>>> 95edd7384477a9a46f3d2218ed5d5b0eff5ce133
     public SubscriptionsViewModel(ExpenseService expenseService)
     {
         _expenseService = expenseService;
         Title = "Subscriptions";
+<<<<<<< HEAD
     }
 
     [RelayCommand]
@@ -111,3 +115,39 @@ public partial class SubscriptionsViewModel : BaseViewModel
         await LoadSubscriptionsAsync();
     }
 }
+=======
+        Subscriptions = new ObservableCollection<Subscription>();
+    }
+
+    [ObservableProperty]
+    private ObservableCollection<Subscription> subscriptions;
+
+    [RelayCommand]
+    private async Task LoadSubscriptionsAsync()
+    {
+        if (IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+            ClearError();
+
+            var subscriptions = await _expenseService.GetSubscriptionsAsync();
+            
+            Subscriptions.Clear();
+            foreach (var subscription in subscriptions)
+            {
+                Subscriptions.Add(subscription);
+            }
+        }
+        catch (Exception ex)
+        {
+            SetError($"Failed to load subscriptions: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+}
+>>>>>>> 95edd7384477a9a46f3d2218ed5d5b0eff5ce133

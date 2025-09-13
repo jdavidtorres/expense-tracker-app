@@ -1,15 +1,28 @@
+<<<<<<< HEAD
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest package="maui-application-id-placeholder" version="0.0.0" api-version="9" xmlns="http://tizen.org/ns/packages">
   <profile name="common" />
   <ui-application appid="maui-application-id-placeholder" exec="ExpenseTracker.dll" multiple="false" nodisplay="false" taskmanage="true" type="dotnet" launch_mode="single">
     <label>maui-application-title-placeholder</label>
     <icon>maui-appicon-placeholder</icon>
+=======
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns="http://tizen.org/ns/packages" api-version="12" package="com.companyname.expensetracker" version="1.0.0">
+  <profile name="common" />
+  <ui-application appid="com.companyname.expensetracker" exec="ExpenseTracker.dll" multiple="false" nodisplay="false" taskmanage="true" type="dotnet">
+    <label>Expense Tracker</label>
+    <icon>appicon.png</icon>
+>>>>>>> 95edd7384477a9a46f3d2218ed5d5b0eff5ce133
     <metadata key="http://tizen.org/metadata/prefer_dotnet_aot" value="true" />
   </ui-application>
   <shortcut-list />
   <privileges>
     <privilege>http://tizen.org/privilege/internet</privilege>
+<<<<<<< HEAD
   </privileges> 
+=======
+  </privileges>
+>>>>>>> 95edd7384477a9a46f3d2218ed5d5b0eff5ce133
   <dependencies />
   <provides-appdefined-privileges />
 </manifest>

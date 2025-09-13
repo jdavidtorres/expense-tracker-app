@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿namespace ExpenseTracker
 {
 	public partial class MainPage : ContentPage
@@ -20,5 +21,19 @@
 
 			SemanticScreenReader.Announce(CounterBtn.Text);
 		}
+=======
+namespace ExpenseTracker;
+
+public partial class MainPage : ContentPage
+{
+	public MainPage()
+	{
+		InitializeComponent();
+	}
+
+	private async void OnDashboardClicked(object sender, EventArgs e)
+	{
+		await Shell.Current.GoToAsync("//dashboard");
+>>>>>>> 95edd7384477a9a46f3d2218ed5d5b0eff5ce133
 	}
 }

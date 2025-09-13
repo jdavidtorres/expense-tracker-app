@@ -10,6 +10,7 @@ public partial class InvoicesViewModel : BaseViewModel
 {
     private readonly ExpenseService _expenseService;
 
+<<<<<<< HEAD
     [ObservableProperty]
     private ObservableCollection<Invoice> invoices = new();
 
@@ -22,10 +23,13 @@ public partial class InvoicesViewModel : BaseViewModel
     [ObservableProperty]
     private bool showAllStatuses = true;
 
+=======
+>>>>>>> 95edd7384477a9a46f3d2218ed5d5b0eff5ce133
     public InvoicesViewModel(ExpenseService expenseService)
     {
         _expenseService = expenseService;
         Title = "Invoices";
+<<<<<<< HEAD
     }
 
     [RelayCommand]
@@ -137,3 +141,39 @@ public partial class InvoicesViewModel : BaseViewModel
         await LoadInvoicesAsync();
     }
 }
+=======
+        Invoices = new ObservableCollection<Invoice>();
+    }
+
+    [ObservableProperty]
+    private ObservableCollection<Invoice> invoices;
+
+    [RelayCommand]
+    private async Task LoadInvoicesAsync()
+    {
+        if (IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+            ClearError();
+
+            var invoices = await _expenseService.GetInvoicesAsync();
+            
+            Invoices.Clear();
+            foreach (var invoice in invoices)
+            {
+                Invoices.Add(invoice);
+            }
+        }
+        catch (Exception ex)
+        {
+            SetError($"Failed to load invoices: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+}
+>>>>>>> 95edd7384477a9a46f3d2218ed5d5b0eff5ce133
