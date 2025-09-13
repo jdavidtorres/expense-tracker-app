@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+             x:Class="ExpenseTracker.Views.InvoiceFormPage"
+             Title="{Binding FormTitle}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Save"
+                     Command="{Binding SaveCommand}"
+                     IconImageSource="save.png"/>
+        <ToolbarItem Text="Cancel"
+                     Command="{Binding CancelCommand}"
+                     IconImageSource="cancel.png"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid>
+        <!-- Loading indicator -->
+        <ActivityIndicator IsVisible="{Binding IsLoading}"
+                           IsRunning="{Binding IsLoading}"
+                           VerticalOptions="Center"
+                           HorizontalOptions="Center"/>
+
+        <!-- Error message -->
+        <Frame IsVisible="{Binding HasError}"
+               BackgroundColor="Red"
+               Padding="16"
+               Margin="16"
+               VerticalOptions="Start">
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="White"
+                   HorizontalTextAlignment="Center"/>
+        </Frame>
+
+        <!-- Form content -->
+        <ScrollView IsVisible="{Binding IsNotLoading}"
+                Padding="16">
+            <StackLayout Spacing="20">
+
+                <!-- Invoice Number -->
+                <StackLayout>
+                    <Label Text="Invoice Number"
+                            FontAttributes="Bold"/>
+                    <Entry Text="{Binding Invoice.InvoiceNumber}"
+                           Placeholder="Enter invoice number"
+                           BackgroundColor="White"
+                           Margin="0,5,0,0"/>
+                </StackLayout>
+
+                <!-- Invoice Name -->
+                <StackLayout>
+                    <Label Text="Invoice Name"
+                            FontAttributes="Bold"/>
+                    <Entry Text="{Binding Invoice.Name}"
+                           Placeholder="Enter invoice name"
+                           BackgroundColor="White"
+                           Margin="0,5,0,0"/>
+                </StackLayout>
+
+                <!-- Vendor -->
+                <StackLayout>
+                    <Label Text="Vendor"
+                            FontAttributes="Bold"/>
+                    <Entry Text="{Binding Invoice.Vendor}"
+                           Placeholder="Enter vendor name"
+                           BackgroundColor="White"
+                           Margin="0,5,0,0"/>
+                </StackLayout>
+
+                <!-- Amount -->
+                <StackLayout>
+                    <Label Text="Amount"
+                            FontAttributes="Bold"/>
+                    <Entry Text="{Binding Invoice.Amount}"
+                           Placeholder="0.00"
+                           Keyboard="Numeric"
+                           BackgroundColor="White"
+                           Margin="0,5,0,0"/>
+                </StackLayout>
+
+                <!-- Category -->
+                <StackLayout>
+                    <Label Text="Category"
+                            FontAttributes="Bold"/>
+                    <Entry Text="{Binding Invoice.Category}"
+                           Placeholder="Enter category"
+                           BackgroundColor="White"
+                           Margin="0,5,0,0"/>
+                </StackLayout>
+
+                <!-- Description -->
+                <StackLayout>
+                    <Label Text="Description"
+                            FontAttributes="Bold"/>
+                    <Editor Text="{Binding Invoice.Description}"
+                            Placeholder="Enter description"
+                            BackgroundColor="White"
+                            HeightRequest="100"
+                            Margin="0,5,0,0"/>
+                </StackLayout>
+
+                <!-- Issue Date -->
+                <StackLayout>
+                    <Label Text="Issue Date"
+                            FontAttributes="Bold"/>
+                    <DatePicker Date="{Binding Invoice.IssueDate}"
+                                BackgroundColor="White"
+                                Margin="0,5,0,0"/>
+                </StackLayout>
+
+                <!-- Due Date -->
+                <StackLayout>
+                    <Label Text="Due Date (Optional)"
+                            FontAttributes="Bold"/>
+                    <DatePicker Date="{Binding Invoice.DueDate}"
+                                BackgroundColor="White"
+                                Margin="0,5,0,0"/>
+                </StackLayout>
+
+                <!-- Status -->
+                <StackLayout>
+                    <Label Text="Status"
+                            FontAttributes="Bold"/>
+                    <Picker ItemsSource="{Binding InvoiceStatuses}"
+                            SelectedItem="{Binding Invoice.Status}"
+                            BackgroundColor="White"
+                            Margin="0,5,0,0"/>
+                </StackLayout>
+
+                <!-- Action Buttons -->
+                <Grid ColumnDefinitions="*,*"
+                        ColumnSpacing="10"
+                        Margin="0,20,0,0">
+                    <Button Grid.Column="0"
+                            Text="Save"
+                            Command="{Binding SaveCommand}"
+                            BackgroundColor="Green"
+                            TextColor="White"
+                            IsEnabled="{Binding IsNotLoading}"/>
+                    <Button Grid.Column="1"
+                            Text="Cancel"
+                            Command="{Binding CancelCommand}"
+                            BackgroundColor="Gray"
+                            TextColor="White"/>
+                </Grid>
+
+            </StackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

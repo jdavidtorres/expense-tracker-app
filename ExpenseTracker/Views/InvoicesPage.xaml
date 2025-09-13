@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:models="clr-namespace:ExpenseTracker.Models"
+             x:Class="ExpenseTracker.Views.InvoicesPage"
+             Title="{Binding Title}">
+
+
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Add"
+                     Command="{Binding AddInvoiceCommand}"
+                     IconImageSource="add.png"/>
+        <ToolbarItem Text="Refresh"
+                     Command="{Binding RefreshCommand}"
+                     IconImageSource="refresh.png"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Filter controls -->
+        <StackLayout Grid.Row="0"
+                Orientation="Horizontal"
+                Padding="16,8"
+                BackgroundColor="LightGray">
+            <Label Text="Filter:"
+                    FontSize="14"
+                    VerticalOptions="Center"/>
+            <Button Text="All"
+                    Command="{Binding ShowAllCommand}"
+                    FontSize="12"
+                    Padding="8,4"
+                    CornerRadius="4"
+                    BackgroundColor="Blue"
+                    TextColor="White"/>
+            <Button Text="Pending"
+                    Command="{Binding FilterByStatusCommand}"
+                    CommandParameter="Pending"
+                    FontSize="12"
+                    Padding="8,4"
+                    CornerRadius="4"
+                    BackgroundColor="Orange"
+                    TextColor="White"/>
+            <Button Text="Paid"
+                    Command="{Binding FilterByStatusCommand}"
+                    CommandParameter="Paid"
+                    FontSize="12"
+                    Padding="8,4"
+                    CornerRadius="4"
+                    BackgroundColor="Green"
+                    TextColor="White"/>
+            <Button Text="Overdue"
+                    Command="{Binding FilterByStatusCommand}"
+                    CommandParameter="Overdue"
+                    FontSize="12"
+                    Padding="8,4"
+                    CornerRadius="4"
+                    BackgroundColor="Red"
+                    TextColor="White"/>
+        </StackLayout>
+
+        <Grid Grid.Row="1">
+            <!-- Loading indicator -->
+            <ActivityIndicator IsVisible="{Binding IsLoading}"
+                               IsRunning="{Binding IsLoading}"
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center"/>
+
+            <!-- Error message -->
+            <Frame IsVisible="{Binding HasError}"
+                   BackgroundColor="Red"
+                   Padding="16"
+                   Margin="16"
+                   VerticalOptions="Start">
+                <Label Text="{Binding ErrorMessage}"
+                       TextColor="White"
+                       HorizontalTextAlignment="Center"/>
+            </Frame>
+
+            <!-- Content -->
+            <RefreshView IsRefreshing="{Binding IsLoading}"
+                         Command="{Binding RefreshCommand}"
+                         IsVisible="{Binding IsNotLoading}">
+                <CollectionView ItemsSource="{Binding Invoices}"
+                                BackgroundColor="LightGray">
+                    <CollectionView.EmptyView>
+                        <StackLayout VerticalOptions="Center"
+                                HorizontalOptions="Center"
+                                Padding="50">
+                            <Label Text="No invoices found"
+                                   FontSize="18"
+                                   TextColor="Gray"
+                                   HorizontalTextAlignment="Center"/>
+                            <Button Text="Add Your First Invoice"
+                                    Command="{Binding AddInvoiceCommand}"
+                                    BackgroundColor="Orange"
+                                    TextColor="White"
+                                    Margin="0,20,0,0"/>
+                        </StackLayout>
+                    </CollectionView.EmptyView>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Invoice">
+                            <Grid Padding="16"
+                                    RowDefinitions="Auto,Auto,Auto"
+                                    ColumnDefinitions="*,Auto">
+                                <!-- Background frame -->
+                                <Frame Grid.RowSpan="3"
+                                        Grid.ColumnSpan="2"
+                                       BackgroundColor="White"
+                                       CornerRadius="8"
+                                       Padding="16"
+                                       Margin="8,4,8,4"
+                                       HasShadow="True">
+                                    <Grid RowDefinitions="Auto,Auto,Auto"
+                                            ColumnDefinitions="*,Auto">
+
+                                        <!-- Invoice number and vendor -->
+                                        <StackLayout Grid.Row="0"
+                                                Grid.Column="0">
+                                            <Label Text="{Binding InvoiceNumber}"
+                                                   FontSize="18"
+                                                   FontAttributes="Bold"/>
+                                            <Label Text="{Binding Vendor}"
+                                                   FontSize="14"
+                                                   TextColor="Gray"/>
+                                        </StackLayout>
+
+                                        <!-- Amount and status -->
+                                        <StackLayout Grid.Row="0"
+                                                Grid.Column="1"
+                                                HorizontalOptions="End">
+                                            <Label Text="{Binding Amount, StringFormat='{0:C}'}"
+                                                   FontSize="20"
+                                                   FontAttributes="Bold"
+                                                   HorizontalTextAlignment="End"/>
+                                            <Label Text="{Binding Status}"
+                                                   FontSize="12"
+                                                   HorizontalTextAlignment="End">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label"
+                                                            Binding="{Binding Status}"
+                                                            Value="Paid">
+                                                        <Setter Property="TextColor"
+                                                                Value="Green"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label"
+                                                            Binding="{Binding Status}"
+                                                            Value="Overdue">
+                                                        <Setter Property="TextColor"
+                                                                Value="Red"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label"
+                                                            Binding="{Binding Status}"
+                                                            Value="Pending">
+                                                        <Setter Property="TextColor"
+                                                                Value="Orange"/>
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </StackLayout>
+
+                                        <!-- Dates -->
+                                        <StackLayout Grid.Row="1"
+                                                Grid.Column="0"
+                                                Grid.ColumnSpan="2"
+                                                     Orientation="Horizontal"
+                                                     Margin="0,8,0,0">
+                                            <Label Text="{Binding IssueDate, StringFormat='Issued: {0:MMM dd, yyyy}'}"
+                                                   FontSize="12"
+                                                   TextColor="Gray"/>
+                                            <Label Text="•"
+                                                   FontSize="12"
+                                                   TextColor="Gray"
+                                                   Margin="8,0"/>
+                                            <Label Text="{Binding DueDate, StringFormat='Due: {0:MMM dd, yyyy}'}"
+                                                   FontSize="12"
+                                                   TextColor="Gray"/>
+                                        </StackLayout>
+
+                                        <!-- Action buttons -->
+                                        <StackLayout Grid.Row="2"
+                                                Grid.Column="0"
+                                                Grid.ColumnSpan="2"
+                                                     Orientation="Horizontal"
+                                                     HorizontalOptions="End"
+                                                     Margin="0,8,0,0">
+                                            <Button Text="Mark Paid"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:InvoicesViewModel}}, Path=MarkAsPaidCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    BackgroundColor="Green"
+                                                    TextColor="White"
+                                                    FontSize="12"
+                                                    Padding="12,4"
+                                                    CornerRadius="4"/>
+
+                                            <Button Text="Edit"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:InvoicesViewModel}}, Path=EditInvoiceCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    BackgroundColor="Blue"
+                                                    TextColor="White"
+                                                    FontSize="12"
+                                                    Padding="12,4"
+                                                    CornerRadius="4"
+                                                    Margin="8,0,0,0"/>
+
+                                            <Button Text="Delete"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:InvoicesViewModel}}, Path=DeleteInvoiceCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    BackgroundColor="Red"
+                                                    TextColor="White"
+                                                    FontSize="12"
+                                                    Padding="12,4"
+                                                    CornerRadius="4"
+                                                    Margin="8,0,0,0"/>
+                                        </StackLayout>
+                                    </Grid>
+                                </Frame>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:models="clr-namespace:ExpenseTracker.Models"
+             x:Class="ExpenseTracker.Views.DashboardPage"
+             Title="{Binding Title}">
+
+
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Refresh"
+                     Command="{Binding RefreshCommand}"
+                     IconImageSource="refresh.png"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid>
+        <!-- Loading indicator -->
+        <ActivityIndicator IsVisible="{Binding IsLoading}"
+                           IsRunning="{Binding IsLoading}"
+                           VerticalOptions="Center"
+                           HorizontalOptions="Center"/>
+
+        <!-- Error message -->
+        <Frame IsVisible="{Binding HasError}"
+               BackgroundColor="Red"
+               Padding="16"
+               Margin="16"
+               VerticalOptions="Start">
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="White"
+                   HorizontalTextAlignment="Center"/>
+        </Frame>
+
+        <!-- Content -->
+        <ScrollView IsVisible="{Binding IsNotLoading}"
+                Padding="16">
+            <StackLayout Spacing="20">
+
+                <!-- Summary Cards -->
+                <Grid ColumnDefinitions="*,*"
+                        RowDefinitions="Auto"
+                        ColumnSpacing="10">
+                    <!-- Current Month Card -->
+                    <Frame Grid.Column="0"
+                            BackgroundColor="LightBlue"
+                            Padding="16"
+                            CornerRadius="8">
+                        <StackLayout>
+                            <Label Text="This Month"
+                                    FontAttributes="Bold"
+                                    FontSize="16"/>
+                            <Label Text="{Binding CurrentMonthSummary.TotalExpenses, StringFormat='{0:C}'}"
+                                   FontSize="24"
+                                    FontAttributes="Bold"/>
+                            <Label Text="{Binding CurrentMonthSummary.SubscriptionCount, StringFormat='Subscriptions: {0}'}"
+                                   FontSize="12"/>
+                            <Label Text="{Binding CurrentMonthSummary.InvoiceCount, StringFormat='Invoices: {0}'}"
+                                   FontSize="12"/>
+                        </StackLayout>
+                    </Frame>
+
+                    <!-- Current Year Card -->
+                    <Frame Grid.Column="1"
+                            BackgroundColor="LightGreen"
+                            Padding="16"
+                            CornerRadius="8">
+                        <StackLayout>
+                            <Label Text="This Year"
+                                    FontAttributes="Bold"
+                                    FontSize="16"/>
+                            <Label Text="{Binding CurrentYearSummary.TotalExpenses, StringFormat='{0:C}'}"
+                                   FontSize="24"
+                                    FontAttributes="Bold"/>
+                            <Label Text="{Binding CurrentYearSummary.TotalSubscriptions, StringFormat='Subscriptions: {0:C}'}"
+                                   FontSize="12"/>
+                            <Label Text="{Binding CurrentYearSummary.TotalInvoices, StringFormat='Invoices: {0:C}'}"
+                                   FontSize="12"/>
+                        </StackLayout>
+                    </Frame>
+                </Grid>
+
+                <!-- Category Breakdown -->
+                <Frame BackgroundColor="White"
+                        Padding="16"
+                        CornerRadius="8">
+                    <StackLayout>
+                        <Label Text="Category Breakdown"
+                                FontAttributes="Bold"
+                                FontSize="18"
+                                Margin="0,0,0,10"/>
+                        <CollectionView ItemsSource="{Binding CategoryBreakdown}"
+                                HeightRequest="200">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:CategorySummary">
+                                    <Grid ColumnDefinitions="*,Auto,Auto"
+                                            Padding="8"
+                                            RowSpacing="4">
+                                        <Label Grid.Column="0"
+                                                Text="{Binding Category}"
+                                                FontSize="16"/>
+                                        <Label Grid.Column="1"
+                                                Text="{Binding TotalAmount, StringFormat='{0:C}'}"
+                                               FontSize="16"
+                                                FontAttributes="Bold"/>
+                                        <Label Grid.Column="2"
+                                                Text="{Binding Percentage, StringFormat='{0:P0}'}"
+                                               FontSize="14"
+                                                TextColor="Gray"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </StackLayout>
+                </Frame>
+
+                <!-- Quick Actions -->
+                <Grid ColumnDefinitions="*,*"
+                        ColumnSpacing="10">
+                    <Button Grid.Column="0"
+                            Text="View Subscriptions"
+                            Command="{Binding NavigateToSubscriptionsCommand}"
+                            BackgroundColor="Blue"
+                            TextColor="White"/>
+                    <Button Grid.Column="1"
+                            Text="View Invoices"
+                            Command="{Binding NavigateToInvoicesCommand}"
+                            BackgroundColor="Orange"
+                            TextColor="White"/>
+                </Grid>
+
+                <!-- Recent Subscriptions -->
+                <Frame BackgroundColor="White"
+                        Padding="16"
+                        CornerRadius="8">
+                    <StackLayout>
+                        <Label Text="Recent Subscriptions"
+                                FontAttributes="Bold"
+                                FontSize="18"
+                                Margin="0,0,0,10"/>
+                        <CollectionView ItemsSource="{Binding RecentSubscriptions}"
+                                HeightRequest="150">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Subscription">
+                                    <Grid ColumnDefinitions="*,Auto,Auto"
+                                            Padding="8"
+                                            RowSpacing="4">
+                                        <StackLayout Grid.Column="0">
+                                            <Label Text="{Binding Name}"
+                                                    FontSize="16"
+                                                    FontAttributes="Bold"/>
+                                            <Label Text="{Binding Provider}"
+                                                    FontSize="14"
+                                                    TextColor="Gray"/>
+                                        </StackLayout>
+                                        <Label Grid.Column="1"
+                                                Text="{Binding Amount, StringFormat='{0:C}'}"
+                                               FontSize="16"
+                                                FontAttributes="Bold"
+                                                VerticalOptions="Center"/>
+                                        <Label Grid.Column="2"
+                                                Text="{Binding BillingCycle}"
+                                               FontSize="12"
+                                                TextColor="Gray"
+                                                VerticalOptions="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </StackLayout>
+                </Frame>
+
+                <!-- Recent Invoices -->
+                <Frame BackgroundColor="White"
+                        Padding="16"
+                        CornerRadius="8">
+                    <StackLayout>
+                        <Label Text="Recent Invoices"
+                                FontAttributes="Bold"
+                                FontSize="18"
+                                Margin="0,0,0,10"/>
+                        <CollectionView ItemsSource="{Binding RecentInvoices}"
+                                HeightRequest="150">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Invoice">
+                                    <Grid ColumnDefinitions="*,Auto,Auto"
+                                            Padding="8"
+                                            RowSpacing="4">
+                                        <StackLayout Grid.Column="0">
+                                            <Label Text="{Binding InvoiceNumber}"
+                                                    FontSize="16"
+                                                    FontAttributes="Bold"/>
+                                            <Label Text="{Binding Vendor}"
+                                                    FontSize="14"
+                                                    TextColor="Gray"/>
+                                        </StackLayout>
+                                        <Label Grid.Column="1"
+                                                Text="{Binding Amount, StringFormat='{0:C}'}"
+                                               FontSize="16"
+                                                FontAttributes="Bold"
+                                                VerticalOptions="Center"/>
+                                        <Label Grid.Column="2"
+                                                Text="{Binding Status}"
+                                               FontSize="12"
+                                                VerticalOptions="Center">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label"
+                                                        Binding="{Binding Status}"
+                                                        Value="Paid">
+                                                    <Setter Property="TextColor"
+                                                            Value="Green"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label"
+                                                        Binding="{Binding Status}"
+                                                        Value="Overdue">
+                                                    <Setter Property="TextColor"
+                                                            Value="Red"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label"
+                                                        Binding="{Binding Status}"
+                                                        Value="Pending">
+                                                    <Setter Property="TextColor"
+                                                            Value="Orange"/>
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </StackLayout>
+                </Frame>
+
+            </StackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
