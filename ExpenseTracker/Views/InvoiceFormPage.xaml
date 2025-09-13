@@ -23,10 +23,10 @@
 
         <!-- Error message -->
         <Border IsVisible="{Binding HasError}"
-               BackgroundColor="Red"
-               Padding="16"
-               Margin="16"
-               VerticalOptions="Start">
+                BackgroundColor="Red"
+                Padding="16"
+                Margin="16"
+                VerticalOptions="Start">
             <Label Text="{Binding ErrorMessage}"
                    TextColor="White"
                    HorizontalTextAlignment="Center"/>
@@ -34,13 +34,13 @@
 
         <!-- Form content -->
         <ScrollView IsVisible="{Binding IsNotLoading}"
-                Padding="16">
+                    Padding="16">
             <StackLayout Spacing="20">
 
                 <!-- Invoice Number -->
                 <StackLayout>
                     <Label Text="Invoice Number"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <Entry Text="{Binding Invoice.InvoiceNumber}"
                            Placeholder="Enter invoice number"
                            BackgroundColor="White"
@@ -50,7 +50,7 @@
                 <!-- Invoice Name -->
                 <StackLayout>
                     <Label Text="Invoice Name"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <Entry Text="{Binding Invoice.Name}"
                            Placeholder="Enter invoice name"
                            BackgroundColor="White"
@@ -60,7 +60,7 @@
                 <!-- Vendor -->
                 <StackLayout>
                     <Label Text="Vendor"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <Entry Text="{Binding Invoice.Vendor}"
                            Placeholder="Enter vendor name"
                            BackgroundColor="White"
@@ -70,7 +70,7 @@
                 <!-- Amount -->
                 <StackLayout>
                     <Label Text="Amount"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <Entry Text="{Binding Invoice.Amount}"
                            Placeholder="0.00"
                            Keyboard="Numeric"
@@ -81,7 +81,7 @@
                 <!-- Category -->
                 <StackLayout>
                     <Label Text="Category"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <Entry Text="{Binding Invoice.Category}"
                            Placeholder="Enter category"
                            BackgroundColor="White"
@@ -91,7 +91,7 @@
                 <!-- Description -->
                 <StackLayout>
                     <Label Text="Description"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <Editor Text="{Binding Invoice.Description}"
                             Placeholder="Enter description"
                             BackgroundColor="White"
@@ -102,7 +102,7 @@
                 <!-- Issue Date -->
                 <StackLayout>
                     <Label Text="Issue Date"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <DatePicker Date="{Binding Invoice.IssueDate}"
                                 BackgroundColor="White"
                                 Margin="0,5,0,0"/>
@@ -111,7 +111,7 @@
                 <!-- Due Date -->
                 <StackLayout>
                     <Label Text="Due Date (Optional)"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <DatePicker Date="{Binding Invoice.DueDate}"
                                 BackgroundColor="White"
                                 Margin="0,5,0,0"/>
@@ -120,7 +120,7 @@
                 <!-- Status -->
                 <StackLayout>
                     <Label Text="Status"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <Picker ItemsSource="{Binding InvoiceStatuses}"
                             SelectedItem="{Binding Invoice.Status}"
                             BackgroundColor="White"
@@ -129,8 +129,8 @@
 
                 <!-- Action Buttons -->
                 <Grid ColumnDefinitions="*,*"
-                        ColumnSpacing="10"
-                        Margin="0,20,0,0">
+                      ColumnSpacing="10"
+                      Margin="0,20,0,0">
                     <Button Grid.Column="0"
                             Text="Save"
                             Command="{Binding SaveCommand}"

@@ -203,13 +203,13 @@ public static class MauiProgram
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
-        
+
         // Configure HttpClient for API calls
         builder.Services.AddHttpClient<ExpenseService>(client =>
         {
             client.BaseAddress = new Uri("http://localhost:8083/api/");
         });
-        
+
         return builder.Build();
     }
 }

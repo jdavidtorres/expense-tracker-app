@@ -23,10 +23,10 @@
 
         <!-- Error message -->
         <Border IsVisible="{Binding HasError}"
-               BackgroundColor="Red"
-               Padding="16"
-               Margin="16"
-               VerticalOptions="Start">
+                BackgroundColor="Red"
+                Padding="16"
+                Margin="16"
+                VerticalOptions="Start">
             <Label Text="{Binding ErrorMessage}"
                    TextColor="White"
                    HorizontalOptions="Center"/>
@@ -34,13 +34,13 @@
 
         <!-- Form content -->
         <ScrollView IsVisible="{Binding IsNotLoading}"
-                Padding="16">
+                    Padding="16">
             <StackLayout Spacing="20">
 
                 <!-- Subscription Name -->
                 <StackLayout>
                     <Label Text="Subscription Name"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <Entry Text="{Binding Subscription.Name}"
                            Placeholder="Enter subscription name"
                            BackgroundColor="White"
@@ -50,7 +50,7 @@
                 <!-- Provider -->
                 <StackLayout>
                     <Label Text="Provider"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <Entry Text="{Binding Subscription.Provider}"
                            Placeholder="Enter provider name"
                            BackgroundColor="White"
@@ -60,7 +60,7 @@
                 <!-- Amount -->
                 <StackLayout>
                     <Label Text="Amount"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <Entry Text="{Binding Subscription.Amount}"
                            Placeholder="0.00"
                            Keyboard="Numeric"
@@ -71,7 +71,7 @@
                 <!-- Billing Cycle -->
                 <StackLayout>
                     <Label Text="Billing Cycle"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <Picker ItemsSource="{Binding BillingCycles}"
                             SelectedItem="{Binding Subscription.BillingCycle}"
                             BackgroundColor="White"
@@ -81,7 +81,7 @@
                 <!-- Category -->
                 <StackLayout>
                     <Label Text="Category"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <Entry Text="{Binding Subscription.Category}"
                            Placeholder="Enter category"
                            BackgroundColor="White"
@@ -91,7 +91,7 @@
                 <!-- Description -->
                 <StackLayout>
                     <Label Text="Description"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <Editor Text="{Binding Subscription.Description}"
                             Placeholder="Enter description"
                             BackgroundColor="White"
@@ -102,7 +102,7 @@
                 <!-- Next Billing Date -->
                 <StackLayout>
                     <Label Text="Next Billing Date"
-                            FontAttributes="Bold"/>
+                           FontAttributes="Bold"/>
                     <DatePicker Date="{Binding Subscription.NextBillingDate}"
                                 BackgroundColor="White"
                                 Margin="0,5,0,0"/>
@@ -110,17 +110,17 @@
 
                 <!-- Active Status -->
                 <StackLayout Orientation="Horizontal"
-                        Spacing="10">
+                             Spacing="10">
                     <Label Text="Active"
-                            FontAttributes="Bold"
-                            VerticalOptions="Center"/>
+                           FontAttributes="Bold"
+                           VerticalOptions="Center"/>
                     <Switch IsToggled="{Binding Subscription.IsActive}"/>
                 </StackLayout>
 
                 <!-- Action Buttons -->
                 <Grid ColumnDefinitions="*,*"
-                        ColumnSpacing="10"
-                        Margin="0,20,0,0">
+                      ColumnSpacing="10"
+                      Margin="0,20,0,0">
                     <Button Grid.Column="0"
                             Text="Save"
                             Command="{Binding SaveCommand}"

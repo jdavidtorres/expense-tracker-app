@@ -36,7 +36,7 @@ public partial class InvoicesViewModel : BaseViewModel
             ErrorMessage = null;
 
             var allInvoices = await _expenseService.GetInvoicesAsync();
-            
+
             if (ShowAllStatuses)
             {
                 Invoices = new ObservableCollection<Invoice>(allInvoices);
@@ -58,7 +58,7 @@ public partial class InvoicesViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private async Task DeleteInvoiceAsync(string id)
+    private async Task DeleteInvoiceByIdAsync(string id)
     {
         try
         {
@@ -69,6 +69,42 @@ public partial class InvoicesViewModel : BaseViewModel
         {
             ErrorMessage = $"Failed to delete invoice: {ex.Message}";
         }
+    }
+
+    [RelayCommand]
+    private async Task DeleteInvoiceAsync(Invoice invoice)
+    {
+        try
+        {
+            await _expenseService.DeleteInvoiceAsync(invoice.Id);
+            await LoadInvoicesAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to delete invoice: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task MarkAsPaidAsync(Invoice invoice)
+    {
+        try
+        {
+            // Update invoice status to paid
+            invoice.Status = InvoiceStatus.Paid;
+            await _expenseService.UpdateInvoiceAsync(invoice);
+            await LoadInvoicesAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to mark invoice as paid: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task EditInvoiceAsync(Invoice invoice)
+    {
+        await Shell.Current.GoToAsync($"edit-invoice?id={invoice.Id}");
     }
 
     [RelayCommand]

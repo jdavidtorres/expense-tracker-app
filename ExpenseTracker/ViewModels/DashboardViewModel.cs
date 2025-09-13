@@ -40,18 +40,18 @@ public partial class DashboardViewModel : BaseViewModel
 
             // Load monthly summary
             CurrentMonthSummary = await _expenseService.GetMonthlySummaryAsync(DateTime.Now.Year, DateTime.Now.Month);
-            
+
             // Load yearly summary
             CurrentYearSummary = await _expenseService.GetYearlySummaryAsync(DateTime.Now.Year);
-            
+
             // Load category breakdown
             var categories = await _expenseService.GetCategorySummaryAsync();
             CategoryBreakdown = new ObservableCollection<CategorySummary>(categories);
-            
+
             // Load recent subscriptions
             var subscriptions = await _expenseService.GetSubscriptionsAsync();
             RecentSubscriptions = new ObservableCollection<Subscription>(subscriptions.Take(5));
-            
+
             // Load recent invoices
             var invoices = await _expenseService.GetInvoicesAsync();
             RecentInvoices = new ObservableCollection<Invoice>(invoices.Take(5));
@@ -69,7 +69,8 @@ public partial class DashboardViewModel : BaseViewModel
     [RelayCommand]
     private async Task NavigateToSubscriptionsAsync()
     {
-        await Shell.Current.GoToAsync("subscriptions");    }
+        await Shell.Current.GoToAsync("subscriptions");
+    }
 
     [RelayCommand]
     private async Task NavigateToInvoicesAsync()
