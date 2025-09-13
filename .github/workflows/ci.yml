@@ -14,9 +14,9 @@ env:
   APP_VERSION: '1.0.${{ github.run_number }}'
 
 jobs:
-  # Build shared libraries on Linux
-  build-shared:
-    name: Build Shared Projects
+  # Build and validate project on Linux
+  build-project:
+    name: Build Project
     runs-on: ubuntu-latest
     
     steps:
@@ -30,6 +30,11 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    - name: Install MAUI workloads
+      run: |
+        dotnet workload install maui-android --verbosity normal
+        dotnet workload list
+
     - name: Cache NuGet packages
       uses: actions/cache@v4
       with:
@@ -38,10 +43,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-nuget-
 
-    - name: Restore and build shared library
+    - name: Restore and build project
       run: |
-        dotnet restore ExpenseTracker.Shared/ExpenseTracker.Shared.csproj
-        dotnet build ExpenseTracker.Shared/ExpenseTracker.Shared.csproj --configuration Release --no-restore
+        dotnet restore ExpenseTracker/ExpenseTracker.csproj
+        dotnet build ExpenseTracker/ExpenseTracker.csproj --configuration Release --no-restore
 
     - name: Check for test projects
       id: check-tests
@@ -56,7 +61,7 @@ jobs:
       if: steps.check-tests.outputs.has_tests == 'true'
       run: |
         # Run tests only on projects that have test frameworks
-        dotnet test ExpenseTracker.Shared/ExpenseTracker.Shared.csproj --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --logger trx || true
+        dotnet test ExpenseTracker/ExpenseTracker.csproj --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --logger trx || true
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
@@ -72,7 +77,7 @@ jobs:
   build-android:
     name: Build Android
     runs-on: ubuntu-latest
-    needs: build-shared
+    needs: build-project
     
     steps:
     - name: Checkout code
@@ -105,15 +110,15 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Restore dependencies
-      run: dotnet restore ExpenseTracker.Maui/ExpenseTracker.Maui.csproj
+      run: dotnet restore ExpenseTracker/ExpenseTracker.csproj
 
     - name: Build MAUI for Android
-      run: dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-android --configuration Release --no-restore
+      run: dotnet build ExpenseTracker/ExpenseTracker.csproj -f net9.0-android --configuration Release --no-restore
 
     - name: Publish Android APK (main branch only)
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        dotnet publish ExpenseTracker.Maui/ExpenseTracker.Maui.csproj \
+        dotnet publish ExpenseTracker/ExpenseTracker.csproj \
           -f net9.0-android \
           --configuration Release \
           --no-restore \
@@ -135,7 +140,7 @@ jobs:
   build-windows:
     name: Build Windows
     runs-on: windows-latest
-    needs: build-shared
+    needs: build-project
     
     steps:
     - name: Checkout code
@@ -162,15 +167,15 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Restore dependencies
-      run: dotnet restore ExpenseTracker.Maui/ExpenseTracker.Maui.csproj
+      run: dotnet restore ExpenseTracker/ExpenseTracker.csproj
 
     - name: Build MAUI for Windows
-      run: dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-windows10.0.19041.0 --configuration Release --no-restore
+      run: dotnet build ExpenseTracker/ExpenseTracker.csproj -f net9.0-windows10.0.19041.0 --configuration Release --no-restore
 
     - name: Publish Windows App (main branch only)
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        dotnet publish ExpenseTracker.Maui/ExpenseTracker.Maui.csproj \
+        dotnet publish ExpenseTracker/ExpenseTracker.csproj \
           -f net9.0-windows10.0.19041.0 \
           --configuration Release \
           --no-restore \
@@ -194,7 +199,7 @@ jobs:
   build-macos:
     name: Build macOS and iOS
     runs-on: macos-latest
-    needs: build-shared
+    needs: build-project
     
     steps:
     - name: Checkout code
@@ -221,19 +226,19 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Restore dependencies
-      run: dotnet restore ExpenseTracker.Maui/ExpenseTracker.Maui.csproj
+      run: dotnet restore ExpenseTracker/ExpenseTracker.csproj
 
     - name: Build MAUI for iOS
-      run: dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-ios --configuration Release --no-restore
+      run: dotnet build ExpenseTracker/ExpenseTracker.csproj -f net9.0-ios --configuration Release --no-restore
 
     - name: Build MAUI for macCatalyst
-      run: dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-maccatalyst --configuration Release --no-restore
+      run: dotnet build ExpenseTracker/ExpenseTracker.csproj -f net9.0-maccatalyst --configuration Release --no-restore
 
   # Code quality analysis
   code-quality:
     name: Code Quality Analysis
     runs-on: ubuntu-latest
-    needs: build-shared
+    needs: build-project
     
     steps:
     - name: Checkout code
@@ -254,25 +259,25 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-nuget-
 
-    - name: Restore shared projects
+    - name: Restore project
       run: |
-        dotnet restore ExpenseTracker.Shared/ExpenseTracker.Shared.csproj
+        dotnet restore ExpenseTracker/ExpenseTracker.csproj
 
     - name: Check code formatting
       run: |
-        dotnet format ExpenseTracker.Shared/ExpenseTracker.Shared.csproj --verify-no-changes --verbosity normal
+        dotnet format ExpenseTracker/ExpenseTracker.csproj --verify-no-changes --verbosity normal
       continue-on-error: true
 
     - name: Run static analysis
       run: |
-        dotnet build ExpenseTracker.Shared/ExpenseTracker.Shared.csproj --configuration Release --verbosity normal /p:TreatWarningsAsErrors=false
+        dotnet build ExpenseTracker/ExpenseTracker.csproj --configuration Release --verbosity normal /p:TreatWarningsAsErrors=false
 
   # Create release tag and publish artifacts (main branch only)
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [build-shared, build-android, build-windows, build-macos, code-quality]
+    needs: [build-project, build-android, build-windows, build-macos, code-quality]
     outputs:
       tag_name: ${{ steps.create_tag.outputs.tag_name }}
       release_url: ${{ steps.create_release.outputs.html_url }}
@@ -342,8 +347,8 @@ jobs:
           **Platform Support:**
           - ✅ Android (API 24+)
           - ✅ Windows 10/11 (Build 19041+)
-          - ✅ iOS (Version 11.0+)
-          - ✅ macOS (macCatalyst 13.1+)
+          - ✅ iOS (Version 15.0+)
+          - ✅ macOS (macCatalyst 15.0+)
 
           **Downloads:**
           - Android APK: Available in release assets
