@@ -22,15 +22,15 @@
                            HorizontalOptions="Center"/>
 
         <!-- Error message -->
-        <Frame IsVisible="{Binding HasError}"
+        <Border IsVisible="{Binding HasError}"
                BackgroundColor="Red"
                Padding="16"
                Margin="16"
                VerticalOptions="Start">
             <Label Text="{Binding ErrorMessage}"
                    TextColor="White"
-                   HorizontalTextAlignment="Center"/>
-        </Frame>
+                   HorizontalOptions="Center"/>
+        </Border>
 
         <!-- Form content -->
         <ScrollView IsVisible="{Binding IsNotLoading}"

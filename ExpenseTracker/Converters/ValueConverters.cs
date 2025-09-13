@@ -4,7 +4,7 @@ namespace ExpenseTracker.Converters;
 
 public class BoolToColorConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is bool boolValue)
         {
@@ -13,7 +13,7 @@ public class BoolToColorConverter : IValueConverter
         return Colors.Gray;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
     }
@@ -21,12 +21,12 @@ public class BoolToColorConverter : IValueConverter
 
 public class IsNotNullConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         return value != null;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
     }
@@ -34,7 +34,7 @@ public class IsNotNullConverter : IValueConverter
 
 public class StatusToBoolConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is Models.InvoiceStatus status && parameter is string param)
         {
@@ -47,7 +47,7 @@ public class StatusToBoolConverter : IValueConverter
         return false;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
     }

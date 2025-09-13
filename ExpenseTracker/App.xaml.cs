@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ﻿namespace ExpenseTracker
 {
 	public partial class App : Application
@@ -14,16 +13,3 @@
 		}
 	}
 }
-=======
-namespace ExpenseTracker;
-
-public partial class App : Application
-{
-	public App()
-	{
-		InitializeComponent();
-
-		MainPage = new AppShell();
-	}
-}
->>>>>>> 95edd7384477a9a46f3d2218ed5d5b0eff5ce133
