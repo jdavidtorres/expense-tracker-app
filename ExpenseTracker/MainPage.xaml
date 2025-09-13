@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ExpenseTracker.MainPage"
+             Title="Expense Tracker">
+
+    <StackLayout Padding="30" Spacing="25" VerticalOptions="Center">
+        <Label 
+            x:Name="WelcomeLabel"
+            Text="Welcome to Expense Tracker!"
+            FontSize="18"
+            HorizontalOptions="Center" />
+
+        <Label 
+            Text="This page should not be visible. If you see this, there's an issue with navigation."
+            FontSize="14"
+            HorizontalOptions="Center"
+            TextColor="Red" />
+
+        <Button 
+            x:Name="GoToDashboardBtn"
+            Text="Go to Dashboard"
+            Clicked="OnDashboardClicked"
+            HorizontalOptions="Center" />
+
+    </StackLayout>
+
+</ContentPage>

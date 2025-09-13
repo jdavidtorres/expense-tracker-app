@@ -38,16 +38,16 @@ Download the latest pre-built applications from our [Releases](https://github.co
 #### Windows
 1. Download the `ExpenseTracker-Windows-*.zip` file from the latest release
 2. Extract the ZIP file to your desired location
-3. Run `ExpenseTracker.Maui.exe` to start the application
+3. Run `ExpenseTracker.exe` to start the application
 
 #### iOS/macOS
 iOS and macOS apps require building from source due to Apple's code signing requirements:
 ```bash
 # Build for iOS
-dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-ios --configuration Release
+dotnet build ExpenseTracker/ExpenseTracker.csproj -f net8.0-ios --configuration Release
 
 # Build for macCatalyst
-dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-maccatalyst --configuration Release
+dotnet build ExpenseTracker/ExpenseTracker.csproj -f net8.0-maccatalyst --configuration Release
 ```
 
 ## 🏗️ Architecture
@@ -63,35 +63,35 @@ dotnet build ExpenseTracker.Maui/ExpenseTracker.Maui.csproj -f net9.0-maccatalys
 ### Project Structure
 ```
 ExpenseTracker/
-├── ExpenseTracker.Shared/           # Shared business logic
-│   ├── Models/                      # Data models and entities
-│   │   ├── Expense.cs              # Base expense model
-│   │   ├── Subscription.cs         # Recurring subscription model
-│   │   ├── Invoice.cs              # One-time invoice model
-│   │   └── Summary.cs              # Financial summary model
-│   └── Services/                    # API communication services
-│       └── ExpenseService.cs       # HTTP client service
-├── ExpenseTracker.Maui/            # Native cross-platform app
-│   ├── Views/                       # XAML pages
-│   │   ├── DashboardPage.xaml      # Main dashboard view
-│   │   ├── SubscriptionsPage.xaml  # Subscription management
-│   │   └── InvoicesPage.xaml       # Invoice management
-│   ├── ViewModels/                  # MVVM ViewModels
-│   │   ├── BaseViewModel.cs        # Shared ViewModel base
-│   │   ├── DashboardViewModel.cs   # Dashboard logic
-│   │   ├── SubscriptionsViewModel.cs # Subscription logic
-│   │   └── InvoicesViewModel.cs    # Invoice logic
-│   ├── Platforms/                   # Platform-specific code
-│   ├── Resources/                   # App icons, images, fonts
-│   ├── AppShell.xaml               # Navigation structure
-│   └── MauiProgram.cs              # App configuration and DI
-└── ExpenseTracker.sln              # Visual Studio solution
+└── ExpenseTracker/                    # Unified .NET MAUI project
+    ├── Models/                        # Data models and entities
+    │   ├── Expense.cs                # Base expense model
+    │   ├── Subscription.cs           # Recurring subscription model
+    │   ├── Invoice.cs                # One-time invoice model
+    │   └── Summary.cs                # Financial summary model
+    ├── Services/                      # API communication services
+    │   └── ExpenseService.cs         # HTTP client service
+    ├── Views/                         # XAML pages
+    │   ├── DashboardPage.xaml        # Main dashboard view
+    │   ├── SubscriptionsPage.xaml    # Subscription management
+    │   └── InvoicesPage.xaml         # Invoice management
+    ├── ViewModels/                    # MVVM ViewModels
+    │   ├── BaseViewModel.cs          # Shared ViewModel base
+    │   ├── DashboardViewModel.cs     # Dashboard logic
+    │   ├── SubscriptionsViewModel.cs # Subscription logic
+    │   └── InvoicesViewModel.cs      # Invoice logic
+    ├── Platforms/                     # Platform-specific code
+    ├── Resources/                     # App icons, images, fonts
+    ├── AppShell.xaml                 # Navigation structure
+    ├── App.xaml                      # Application configuration
+    ├── MainPage.xaml                 # Welcome/landing page
+    └── MauiProgram.cs                # App configuration and DI
 ```
 
 ## 🛠️ Development Setup
 
 ### Prerequisites
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/) with MAUI workload
 - [.NET MAUI workload](https://docs.microsoft.com/dotnet/maui/)
 
@@ -116,16 +116,16 @@ dotnet build
 #### MAUI Native Applications
 ```bash
 # Windows (WinUI)
-dotnet run --project ExpenseTracker.Maui --framework net9.0-windows10.0.19041.0
+dotnet run --project ExpenseTracker --framework net8.0-windows10.0.19041.0
 
 # Android (requires Android SDK)
-dotnet run --project ExpenseTracker.Maui --framework net9.0-android
+dotnet run --project ExpenseTracker --framework net8.0-android
 
 # iOS (requires Xcode on macOS)
-dotnet run --project ExpenseTracker.Maui --framework net9.0-ios
+dotnet run --project ExpenseTracker --framework net8.0-ios
 
 # macOS (Mac Catalyst)
-dotnet run --project ExpenseTracker.Maui --framework net9.0-maccatalyst
+dotnet run --project ExpenseTracker --framework net8.0-maccatalyst
 ```
 
 ## 📱 Platform Support
@@ -224,16 +224,16 @@ The project includes automated Continuous Deployment that creates releases with 
 ### Manual Build Commands
 ```bash
 # Android APK
-dotnet publish ExpenseTracker.Maui -f net9.0-android -c Release
+dotnet publish ExpenseTracker -f net8.0-android -c Release
 
 # iOS IPA (macOS required)
-dotnet publish ExpenseTracker.Maui -f net9.0-ios -c Release
+dotnet publish ExpenseTracker -f net8.0-ios -c Release
 
 # Windows App
-dotnet publish ExpenseTracker.Maui -f net9.0-windows10.0.19041.0 -c Release
+dotnet publish ExpenseTracker -f net8.0-windows10.0.19041.0 -c Release
 
 # macOS App Bundle
-dotnet publish ExpenseTracker.Maui -f net9.0-maccatalyst -c Release
+dotnet publish ExpenseTracker -f net8.0-maccatalyst -c Release
 ```
 
 ## 🔄 CI/CD Pipeline
@@ -338,7 +338,7 @@ public partial class SubscriptionsViewModel : BaseViewModel
 ### XAML Data Binding
 ```xml
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             x:Class="ExpenseTracker.Maui.Views.DashboardPage">
+             x:Class="ExpenseTracker.Views.DashboardPage">
     
     <Grid>
         <ActivityIndicator IsVisible="{Binding IsLoading}" />
