@@ -135,23 +135,24 @@ public class GamificationService
 
             // Award streak points only once per milestone
             // Weekly bonus (every 7 days)
-            if (profile.CurrentStreak % 7 == 0 && profile.LastStreakBonusDay != profile.CurrentStreak)
+            if (profile.CurrentStreak % 7 == 0 && profile.LastWeeklyBonusDay != profile.CurrentStreak)
             {
                 await AwardPointsAsync(PointAction.WeeklyStreak);
-                profile.LastStreakBonusDay = profile.CurrentStreak;
+                profile.LastWeeklyBonusDay = profile.CurrentStreak;
             }
             // Monthly bonus (every 30 days)
-            if (profile.CurrentStreak % 30 == 0 && profile.LastStreakBonusDay != profile.CurrentStreak)
+            if (profile.CurrentStreak % 30 == 0 && profile.LastMonthlyBonusDay != profile.CurrentStreak)
             {
                 await AwardPointsAsync(PointAction.MonthlyStreak);
-                profile.LastStreakBonusDay = profile.CurrentStreak;
+                profile.LastMonthlyBonusDay = profile.CurrentStreak;
             }
         }
         else
         {
             // Streak broken
             profile.CurrentStreak = 1;
-            profile.LastStreakBonusDay = 0; // Reset bonus tracker
+            profile.LastWeeklyBonusDay = 0; // Reset weekly bonus tracker
+            profile.LastMonthlyBonusDay = 0; // Reset monthly bonus tracker
         }
 
         profile.LastActivityDate = DateTime.UtcNow;

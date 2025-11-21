@@ -31,8 +31,11 @@ public class GamificationProfile
     [JsonPropertyName("lastActivityDate")]
     public DateTime LastActivityDate { get; set; } = DateTime.UtcNow;
 
-    [JsonPropertyName("lastStreakBonusDay")]
-    public int LastStreakBonusDay { get; set; } = 0;
+    [JsonPropertyName("lastWeeklyBonusDay")]
+    public int LastWeeklyBonusDay { get; set; } = 0;
+
+    [JsonPropertyName("lastMonthlyBonusDay")]
+    public int LastMonthlyBonusDay { get; set; } = 0;
 
     [JsonPropertyName("unlockedAchievements")]
     public List<string> UnlockedAchievements { get; set; } = new();
