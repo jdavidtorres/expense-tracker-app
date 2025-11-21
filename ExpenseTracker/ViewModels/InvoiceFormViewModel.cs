@@ -10,6 +10,7 @@ namespace ExpenseTracker.ViewModels;
 public partial class InvoiceFormViewModel : BaseViewModel
 {
     private readonly ExpenseService _expenseService;
+    private readonly GamificationService _gamificationService;
 
     [ObservableProperty]
     private Invoice invoice = new();
@@ -22,9 +23,10 @@ public partial class InvoiceFormViewModel : BaseViewModel
 
     public List<InvoiceStatus> InvoiceStatuses { get; } = Enum.GetValues<InvoiceStatus>().ToList();
 
-    public InvoiceFormViewModel(ExpenseService expenseService)
+    public InvoiceFormViewModel(ExpenseService expenseService, GamificationService gamificationService)
     {
         _expenseService = expenseService;
+        _gamificationService = gamificationService;
     }
 
     partial void OnInvoiceChanged(Invoice value)
@@ -78,6 +80,19 @@ public partial class InvoiceFormViewModel : BaseViewModel
             {
                 Invoice.CreatedAt = DateTime.UtcNow;
                 await _expenseService.CreateInvoiceAsync(Invoice);
+                
+                // Award points for adding a new invoice
+                var newAchievements = await _gamificationService.RecordExpenseTrackedAsync();
+                
+                // Show achievement notification if any were unlocked
+                if (newAchievements.Any())
+                {
+                    var achievement = newAchievements.First();
+                    await Application.Current!.MainPage!.DisplayAlert(
+                        "🎉 Achievement Unlocked!",
+                        $"{achievement.Icon} {achievement.Name}\n{achievement.Description}\n+{achievement.PointsReward} Points!",
+                        "Awesome!");
+                }
             }
 
             await Shell.Current.GoToAsync("..");

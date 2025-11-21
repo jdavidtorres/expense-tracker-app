@@ -27,6 +27,7 @@ namespace ExpenseTracker
 
 			// Register pages
 			builder.Services.AddTransient<DashboardPage>();
+			builder.Services.AddTransient<GamificationPage>();
 			builder.Services.AddTransient<SubscriptionsPage>();
 			builder.Services.AddTransient<InvoicesPage>();
 			builder.Services.AddTransient<SubscriptionFormPage>();
@@ -34,12 +35,14 @@ namespace ExpenseTracker
 
 			// Register ViewModels
 			builder.Services.AddTransient<DashboardViewModel>();
+			builder.Services.AddTransient<GamificationViewModel>();
 			builder.Services.AddTransient<SubscriptionsViewModel>();
 			builder.Services.AddTransient<InvoicesViewModel>();
 			builder.Services.AddTransient<SubscriptionFormViewModel>();
 			builder.Services.AddTransient<InvoiceFormViewModel>();
 
 			// Register services
+			builder.Services.AddSingleton<GamificationService>();
 			builder.Services.AddTransient<ExpenseService>();
 
 #if DEBUG
