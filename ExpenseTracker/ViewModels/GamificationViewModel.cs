@@ -25,6 +25,9 @@ public partial class GamificationViewModel : BaseViewModel
     [ObservableProperty]
     private BudgetStatus? budgetStatus;
 
+    [ObservableProperty]
+    private BudgetGoalTracker? budgetGoalTracker;
+
     public bool HasRecentAchievements => RecentAchievements.Count > 0;
 
     [ObservableProperty]
@@ -85,6 +88,11 @@ public partial class GamificationViewModel : BaseViewModel
     public async Task UpdateBudgetStatusAsync(decimal monthlyBudget, decimal currentSpending)
     {
         BudgetStatus = _gamificationService.CalculateBudgetStatus(monthlyBudget, currentSpending);
+    }
+
+    public async Task UpdateBudgetGoalProgressAsync(decimal income, decimal essentials, decimal savings, decimal discretionary)
+    {
+        BudgetGoalTracker = _gamificationService.CalculateBudgetGoalProgress(income, essentials, savings, discretionary);
     }
 
     public async Task<List<Achievement>> RecordExpenseTrackedAsync()

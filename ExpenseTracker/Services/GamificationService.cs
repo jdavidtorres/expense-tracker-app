@@ -239,6 +239,20 @@ public class GamificationService
     }
 
     /// <summary>
+    /// Calculate budget goal progress using 70-20-10 rule
+    /// </summary>
+    public BudgetGoalTracker CalculateBudgetGoalProgress(decimal income, decimal essentials, decimal savings, decimal discretionary)
+    {
+        return new BudgetGoalTracker
+        {
+            TotalIncome = income,
+            EssentialsSpent = essentials,
+            SavingsInvested = savings,
+            DiscretionarySpent = discretionary
+        };
+    }
+
+    /// <summary>
     /// Initialize all available achievements
     /// </summary>
     private List<Achievement> InitializeAchievements()
@@ -373,7 +387,7 @@ public class GamificationService
     }
 
     /// <summary>
-    /// Get motivational message based on user's progress
+    /// Get motivational message based on user's progress (focused on productivity, not gaming)
     /// </summary>
     public async Task<string> GetMotivationalMessageAsync()
     {
@@ -383,22 +397,22 @@ public class GamificationService
 
         if (profile.CurrentStreak > 0)
         {
-            messages.Add($"🔥 {profile.CurrentStreak} day streak! Keep it up!");
+            messages.Add($"✅ {profile.CurrentStreak} days of consistent tracking!");
         }
 
         if (profile.Level >= 10)
         {
-            messages.Add($"🌟 Level {profile.Level}! You're a finance pro!");
+            messages.Add($"📊 Building great financial awareness!");
         }
 
         if (profile.TotalExpensesTracked > 50)
         {
-            messages.Add($"📊 {profile.TotalExpensesTracked} expenses tracked! Amazing!");
+            messages.Add($"💰 {profile.TotalExpensesTracked} expenses tracked - excellent progress!");
         }
 
         if (messages.Count == 0)
         {
-            messages.Add("💪 Keep tracking to level up!");
+            messages.Add("📈 Track expenses to build better habits!");
         }
 
         return messages[Random.Shared.Next(messages.Count)];

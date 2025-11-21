@@ -185,6 +185,94 @@
                     </Grid>
                 </Frame>
 
+                <!-- Budget Goal Progress (70-20-10 Rule) -->
+                <Frame BackgroundColor="White"
+                       Padding="16"
+                       CornerRadius="12"
+                       HasShadow="True"
+                       IsVisible="{Binding BudgetGoalTracker, Converter={StaticResource IsNotNullConverter}}">
+                    <StackLayout>
+                        <Label Text="🎯 Budget Goals (70-20-10 Rule)"
+                               FontAttributes="Bold"
+                               FontSize="18"
+                               Margin="0,0,0,10"/>
+                        
+                        <Label Text="{Binding BudgetGoalTracker.GetProgressMessage}"
+                               FontSize="14"
+                               TextColor="#6200EA"
+                               Margin="0,0,0,10"/>
+
+                        <!-- Essentials (70%) -->
+                        <StackLayout Margin="0,8,0,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="🏠 Essentials (70%)"
+                                       FontSize="14"
+                                       FontAttributes="Bold"/>
+                                <Label Grid.Column="1"
+                                       FontSize="12"
+                                       TextColor="Gray">
+                                    <Label.Text>
+                                        <MultiBinding StringFormat="{}{0:C} / {1:C}">
+                                            <Binding Path="BudgetGoalTracker.EssentialsSpent"/>
+                                            <Binding Path="BudgetGoalTracker.EssentialsTarget"/>
+                                        </MultiBinding>
+                                    </Label.Text>
+                                </Label>
+                            </Grid>
+                            <ProgressBar Progress="{Binding BudgetGoalTracker.EssentialsProgress}"
+                                         ProgressColor="#FF9800"
+                                         HeightRequest="8"
+                                         Margin="0,4,0,0"/>
+                        </StackLayout>
+
+                        <!-- Savings (20%) -->
+                        <StackLayout Margin="0,8,0,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="💰 Savings and Investments (20%)"
+                                       FontSize="14"
+                                       FontAttributes="Bold"/>
+                                <Label Grid.Column="1"
+                                       FontSize="12"
+                                       TextColor="Gray">
+                                    <Label.Text>
+                                        <MultiBinding StringFormat="{}{0:C} / {1:C}">
+                                            <Binding Path="BudgetGoalTracker.SavingsInvested"/>
+                                            <Binding Path="BudgetGoalTracker.SavingsTarget"/>
+                                        </MultiBinding>
+                                    </Label.Text>
+                                </Label>
+                            </Grid>
+                            <ProgressBar Progress="{Binding BudgetGoalTracker.SavingsProgress}"
+                                         ProgressColor="#4CAF50"
+                                         HeightRequest="8"
+                                         Margin="0,4,0,0"/>
+                        </StackLayout>
+
+                        <!-- Discretionary (10%) -->
+                        <StackLayout Margin="0,8,0,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="🎉 Discretionary (10%)"
+                                       FontSize="14"
+                                       FontAttributes="Bold"/>
+                                <Label Grid.Column="1"
+                                       FontSize="12"
+                                       TextColor="Gray">
+                                    <Label.Text>
+                                        <MultiBinding StringFormat="{}{0:C} / {1:C}">
+                                            <Binding Path="BudgetGoalTracker.DiscretionarySpent"/>
+                                            <Binding Path="BudgetGoalTracker.DiscretionaryTarget"/>
+                                        </MultiBinding>
+                                    </Label.Text>
+                                </Label>
+                            </Grid>
+                            <ProgressBar Progress="{Binding BudgetGoalTracker.DiscretionaryProgress}"
+                                         ProgressColor="#2196F3"
+                                         HeightRequest="8"
+                                         Margin="0,4,0,0"/>
+                        </StackLayout>
+                    </StackLayout>
+                </Frame>
+
                 <!-- Recently Unlocked Achievements -->
                 <Frame BackgroundColor="White"
                        Padding="16"

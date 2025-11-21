@@ -179,3 +179,57 @@ public enum BudgetHealthLevel
     Critical,
     OverBudget
 }
+
+/// <summary>
+/// Represents budget allocation tracking based on financial planning rules (e.g., 70-20-10 rule)
+/// </summary>
+public class BudgetGoalTracker
+{
+    [JsonPropertyName("totalIncome")]
+    public decimal TotalIncome { get; set; }
+
+    [JsonPropertyName("essentialsSpent")]
+    public decimal EssentialsSpent { get; set; }
+
+    [JsonPropertyName("savingsInvested")]
+    public decimal SavingsInvested { get; set; }
+
+    [JsonPropertyName("discretionarySpent")]
+    public decimal DiscretionarySpent { get; set; }
+
+    // 70-20-10 Rule: 70% Essentials, 20% Savings, 10% Discretionary
+    public decimal EssentialsTarget => TotalIncome * 0.70m;
+    public decimal SavingsTarget => TotalIncome * 0.20m;
+    public decimal DiscretionaryTarget => TotalIncome * 0.10m;
+
+    public double EssentialsProgress => TotalIncome > 0 ? (double)(EssentialsSpent / EssentialsTarget * 100) : 0;
+    public double SavingsProgress => TotalIncome > 0 ? (double)(SavingsInvested / SavingsTarget * 100) : 0;
+    public double DiscretionaryProgress => TotalIncome > 0 ? (double)(DiscretionarySpent / DiscretionaryTarget * 100) : 0;
+
+    public string GetProgressMessage()
+    {
+        if (TotalIncome == 0)
+            return "Set your income to track budget goals";
+
+        var messages = new List<string>();
+
+        if (SavingsProgress >= 100)
+            messages.Add("🎯 Savings goal achieved!");
+        else if (SavingsProgress >= 75)
+            messages.Add($"💰 You're on the way! {SavingsProgress:F0}% toward savings goal");
+        else if (SavingsProgress >= 50)
+            messages.Add($"📈 Good progress: {SavingsProgress:F0}% toward savings goal");
+        else
+            messages.Add($"💪 Keep going: {SavingsProgress:F0}% toward savings goal");
+
+        if (EssentialsProgress > 100)
+            messages.Add("⚠️ Essentials spending over target");
+        else if (EssentialsProgress > 90)
+            messages.Add("🔶 Essentials approaching limit");
+
+        if (DiscretionaryProgress > 100)
+            messages.Add("⚠️ Discretionary spending over target");
+
+        return messages.Count > 0 ? string.Join(" • ", messages) : "✅ On track with your budget!";
+    }
+}
