@@ -266,18 +266,12 @@
                                             <Label Grid.Column="0"
                                                    FontSize="32"
                                                    VerticalOptions="Center">
-                                                <Label.Text>
-                                                    <Binding Path="IsUnlocked">
-                                                        <Binding.Converter>
-                                                            <x:Static Member="local:AchievementIconConverter.Instance"/>
-                                                        </Binding.Converter>
-                                                    </Binding>
-                                                </Label.Text>
                                                 <Label.Triggers>
                                                     <DataTrigger TargetType="Label"
                                                                Binding="{Binding IsUnlocked}"
                                                                Value="True">
                                                         <Setter Property="Text" Value="{Binding Icon}"/>
+                                                        <Setter Property="Opacity" Value="1"/>
                                                     </DataTrigger>
                                                     <DataTrigger TargetType="Label"
                                                                Binding="{Binding IsUnlocked}"

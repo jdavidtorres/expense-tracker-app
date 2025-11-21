@@ -108,4 +108,10 @@ public partial class SubscriptionsViewModel : BaseViewModel
     {
         await Shell.Current.GoToAsync($"edit-subscription?id={subscription.Id}");
     }
+
+    [RelayCommand]
+    private async Task AddSubscriptionAsync()
+    {
+        await Shell.Current.GoToAsync("add-subscription");
+    }
 }
