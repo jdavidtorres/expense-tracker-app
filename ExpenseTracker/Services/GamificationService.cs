@@ -166,11 +166,10 @@ public class GamificationService
         var profile = await GetProfileAsync();
         var newlyUnlocked = new List<Achievement>();
 
-        foreach (var achievement in _allAchievements)
-        {
-            if (profile.UnlockedAchievements.Contains(achievement.Id))
-                continue;
+        var lockedAchievements = _allAchievements.Where(a => !profile.UnlockedAchievements.Contains(a.Id));
 
+        foreach (var achievement in lockedAchievements)
+        {
             var shouldUnlock = achievement.Id switch
             {
                 "first_expense" => profile.TotalExpensesTracked >= 1,

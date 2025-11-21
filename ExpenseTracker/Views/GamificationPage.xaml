@@ -219,7 +219,7 @@
                                     </Label.Text>
                                 </Label>
                             </Grid>
-                            <ProgressBar Progress="{Binding BudgetGoalTracker.EssentialsProgress}"
+                            <ProgressBar Progress="{Binding BudgetGoalTracker.EssentialsProgressBar}"
                                          ProgressColor="#FF9800"
                                          HeightRequest="8"
                                          Margin="0,4,0,0"/>
@@ -242,7 +242,7 @@
                                     </Label.Text>
                                 </Label>
                             </Grid>
-                            <ProgressBar Progress="{Binding BudgetGoalTracker.SavingsProgress}"
+                            <ProgressBar Progress="{Binding BudgetGoalTracker.SavingsProgressBar}"
                                          ProgressColor="#4CAF50"
                                          HeightRequest="8"
                                          Margin="0,4,0,0"/>
@@ -265,7 +265,7 @@
                                     </Label.Text>
                                 </Label>
                             </Grid>
-                            <ProgressBar Progress="{Binding BudgetGoalTracker.DiscretionaryProgress}"
+                            <ProgressBar Progress="{Binding BudgetGoalTracker.DiscretionaryProgressBar}"
                                          ProgressColor="#2196F3"
                                          HeightRequest="8"
                                          Margin="0,4,0,0"/>

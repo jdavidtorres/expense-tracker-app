@@ -202,34 +202,43 @@ public class BudgetGoalTracker
     public decimal SavingsTarget => TotalIncome * 0.20m;
     public decimal DiscretionaryTarget => TotalIncome * 0.10m;
 
-    public double EssentialsProgress => TotalIncome > 0 ? (double)(EssentialsSpent / EssentialsTarget * 100) : 0;
-    public double SavingsProgress => TotalIncome > 0 ? (double)(SavingsInvested / SavingsTarget * 100) : 0;
-    public double DiscretionaryProgress => TotalIncome > 0 ? (double)(DiscretionarySpent / DiscretionaryTarget * 100) : 0;
+    // Display percentages (0-100)
+    public double EssentialsProgress => TotalIncome > 0 && EssentialsTarget > 0 ? (double)(EssentialsSpent / EssentialsTarget * 100) : 0;
+    public double SavingsProgress => TotalIncome > 0 && SavingsTarget > 0 ? (double)(SavingsInvested / SavingsTarget * 100) : 0;
+    public double DiscretionaryProgress => TotalIncome > 0 && DiscretionaryTarget > 0 ? (double)(DiscretionarySpent / DiscretionaryTarget * 100) : 0;
 
-    public string GetProgressMessage()
+    // Normalized values for MAUI ProgressBar (0.0 - 1.0)
+    public double EssentialsProgressBar => TotalIncome > 0 && EssentialsTarget > 0 ? Math.Min(1.0, (double)(EssentialsSpent / EssentialsTarget)) : 0.0;
+    public double SavingsProgressBar => TotalIncome > 0 && SavingsTarget > 0 ? Math.Min(1.0, (double)(SavingsInvested / SavingsTarget)) : 0.0;
+    public double DiscretionaryProgressBar => TotalIncome > 0 && DiscretionaryTarget > 0 ? Math.Min(1.0, (double)(DiscretionarySpent / DiscretionaryTarget)) : 0.0;
+
+    public string ProgressMessage
     {
-        if (TotalIncome == 0)
-            return "Set your income to track budget goals";
+        get
+        {
+            if (TotalIncome == 0)
+                return "Set your income to track budget goals";
 
-        var messages = new List<string>();
+            var messages = new List<string>();
 
-        if (SavingsProgress >= 100)
-            messages.Add("🎯 Savings goal achieved!");
-        else if (SavingsProgress >= 75)
-            messages.Add($"💰 You're on the way! {SavingsProgress:F0}% toward savings goal");
-        else if (SavingsProgress >= 50)
-            messages.Add($"📈 Good progress: {SavingsProgress:F0}% toward savings goal");
-        else
-            messages.Add($"💪 Keep going: {SavingsProgress:F0}% toward savings goal");
+            if (SavingsProgress >= 100)
+                messages.Add("🎯 Savings goal achieved!");
+            else if (SavingsProgress >= 75)
+                messages.Add($"💰 You're on the way! {SavingsProgress:F0}% toward savings goal");
+            else if (SavingsProgress >= 50)
+                messages.Add($"📈 Good progress: {SavingsProgress:F0}% toward savings goal");
+            else
+                messages.Add($"💪 Keep going: {SavingsProgress:F0}% toward savings goal");
 
-        if (EssentialsProgress > 100)
-            messages.Add("⚠️ Essentials spending over target");
-        else if (EssentialsProgress > 90)
-            messages.Add("🔶 Essentials approaching limit");
+            if (EssentialsProgress > 100)
+                messages.Add("⚠️ Essentials spending over target");
+            else if (EssentialsProgress > 90)
+                messages.Add("🔶 Essentials approaching limit");
 
-        if (DiscretionaryProgress > 100)
-            messages.Add("⚠️ Discretionary spending over target");
+            if (DiscretionaryProgress > 100)
+                messages.Add("⚠️ Discretionary spending over target");
 
-        return messages.Count > 0 ? string.Join(" • ", messages) : "✅ On track with your budget!";
+            return messages.Count > 0 ? string.Join(" • ", messages) : "✅ On track with your budget!";
+        }
     }
 }
