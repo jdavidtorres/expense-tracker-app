@@ -190,7 +190,7 @@
                        Padding="16"
                        CornerRadius="12"
                        HasShadow="True"
-                       IsVisible="{Binding RecentAchievements.Count}">
+                       IsVisible="{Binding HasRecentAchievements}">
                     <StackLayout>
                         <Label Text="🎉 Recently Unlocked"
                                FontAttributes="Bold"

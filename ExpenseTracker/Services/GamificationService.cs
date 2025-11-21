@@ -133,27 +133,32 @@ public class GamificationService
                 profile.LongestStreak = profile.CurrentStreak;
             }
 
-            // Award streak points
-            if (profile.CurrentStreak % 7 == 0)
+            // Award streak points only once per milestone
+            // Weekly bonus (every 7 days)
+            if (profile.CurrentStreak % 7 == 0 && profile.LastStreakBonusDay != profile.CurrentStreak)
             {
                 await AwardPointsAsync(PointAction.WeeklyStreak);
+                profile.LastStreakBonusDay = profile.CurrentStreak;
             }
-            if (profile.CurrentStreak % 30 == 0)
+            // Monthly bonus (every 30 days)
+            if (profile.CurrentStreak % 30 == 0 && profile.LastStreakBonusDay != profile.CurrentStreak)
             {
                 await AwardPointsAsync(PointAction.MonthlyStreak);
+                profile.LastStreakBonusDay = profile.CurrentStreak;
             }
         }
         else
         {
             // Streak broken
             profile.CurrentStreak = 1;
+            profile.LastStreakBonusDay = 0; // Reset bonus tracker
         }
 
         profile.LastActivityDate = DateTime.UtcNow;
     }
 
     /// <summary>
-    /// Check and unlock any newly earned achievements
+    /// Check and unlock any newly earned achievements (without awarding points to prevent recursion)
     /// </summary>
     private async Task<List<Achievement>> CheckAchievementsAsync()
     {
@@ -189,8 +194,16 @@ public class GamificationService
                 achievement.UnlockedDate = DateTime.UtcNow;
                 newlyUnlocked.Add(achievement);
 
-                // Award achievement points
-                await AwardPointsAsync(achievement.PointsReward);
+                // Award achievement points directly to avoid recursion
+                profile.ExperiencePoints += achievement.PointsReward;
+                profile.TotalPoints += achievement.PointsReward;
+
+                // Check for level up without triggering another achievement check
+                while (profile.ExperiencePoints >= profile.ExperienceToNextLevel && profile.ExperienceToNextLevel > 0)
+                {
+                    profile.ExperiencePoints -= profile.ExperienceToNextLevel;
+                    profile.Level++;
+                }
             }
         }
 
@@ -387,7 +400,6 @@ public class GamificationService
             messages.Add("💪 Keep tracking to level up!");
         }
 
-        var random = new Random();
-        return messages[random.Next(messages.Count)];
+        return messages[Random.Shared.Next(messages.Count)];
     }
 }

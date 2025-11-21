@@ -25,6 +25,8 @@ public partial class GamificationViewModel : BaseViewModel
     [ObservableProperty]
     private BudgetStatus? budgetStatus;
 
+    public bool HasRecentAchievements => RecentAchievements.Count > 0;
+
     [ObservableProperty]
     private bool showLevelUpCelebration = false;
 
@@ -60,6 +62,9 @@ public partial class GamificationViewModel : BaseViewModel
             RecentAchievements = new ObservableCollection<Achievement>(recent);
 
             MotivationalMessage = await _gamificationService.GetMotivationalMessageAsync();
+            
+            // Notify property change for HasRecentAchievements
+            OnPropertyChanged(nameof(HasRecentAchievements));
         }
         catch (Exception ex)
         {

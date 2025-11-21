@@ -31,6 +31,9 @@ public class GamificationProfile
     [JsonPropertyName("lastActivityDate")]
     public DateTime LastActivityDate { get; set; } = DateTime.UtcNow;
 
+    [JsonPropertyName("lastStreakBonusDay")]
+    public int LastStreakBonusDay { get; set; } = 0;
+
     [JsonPropertyName("unlockedAchievements")]
     public List<string> UnlockedAchievements { get; set; } = new();
 
@@ -38,9 +41,22 @@ public class GamificationProfile
     public int TotalPoints { get; set; } = 0;
 
     /// <summary>
-    /// Calculate level progress percentage
+    /// Calculate level progress percentage (0.0 to 1.0 for ProgressBar)
     /// </summary>
-    public double LevelProgressPercentage => (double)ExperiencePoints / ExperienceToNextLevel * 100;
+    public double LevelProgressPercentage
+    {
+        get
+        {
+            if (ExperienceToNextLevel == 0 || Level == 0)
+                return 0;
+            return (double)ExperiencePoints / ExperienceToNextLevel;
+        }
+    }
+
+    /// <summary>
+    /// Calculate level progress as a display percentage (0 to 100)
+    /// </summary>
+    public double LevelProgressDisplayPercentage => LevelProgressPercentage * 100;
 }
 
 /// <summary>
