@@ -197,7 +197,7 @@
                                FontSize="18"
                                Margin="0,0,0,10"/>
                         
-                        <Label Text="{Binding BudgetGoalTracker.GetProgressMessage}"
+                        <Label Text="{Binding BudgetGoalTracker.ProgressMessage}"
                                FontSize="14"
                                TextColor="#6200EA"
                                Margin="0,0,0,10"/>
