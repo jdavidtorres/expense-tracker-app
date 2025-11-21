@@ -9,6 +9,7 @@ namespace ExpenseTracker.ViewModels;
 public partial class DashboardViewModel : BaseViewModel
 {
     private readonly ExpenseService _expenseService;
+    private readonly GamificationService _gamificationService;
 
     [ObservableProperty]
     private MonthlySummary? currentMonthSummary;
@@ -25,9 +26,16 @@ public partial class DashboardViewModel : BaseViewModel
     [ObservableProperty]
     private ObservableCollection<Invoice> recentInvoices = new();
 
-    public DashboardViewModel(ExpenseService expenseService)
+    [ObservableProperty]
+    private GamificationProfile? gamificationProfile;
+
+    [ObservableProperty]
+    private string motivationalMessage = string.Empty;
+
+    public DashboardViewModel(ExpenseService expenseService, GamificationService gamificationService)
     {
         _expenseService = expenseService;
+        _gamificationService = gamificationService;
     }
 
     [RelayCommand]
@@ -37,6 +45,10 @@ public partial class DashboardViewModel : BaseViewModel
         {
             IsLoading = true;
             ErrorMessage = null;
+
+            // Load gamification profile
+            GamificationProfile = await _gamificationService.GetProfileAsync();
+            MotivationalMessage = await _gamificationService.GetMotivationalMessageAsync();
 
             // Load monthly summary
             CurrentMonthSummary = await _expenseService.GetMonthlySummaryAsync(DateTime.Now.Year, DateTime.Now.Month);
@@ -82,5 +94,11 @@ public partial class DashboardViewModel : BaseViewModel
     private async Task RefreshAsync()
     {
         await LoadDashboardDataAsync();
+    }
+
+    [RelayCommand]
+    private async Task NavigateToGamificationAsync()
+    {
+        await Shell.Current.GoToAsync("gamification");
     }
 }

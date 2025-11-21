@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:models="clr-namespace:ExpenseTracker.Models"
+             x:Class="ExpenseTracker.Views.GamificationPage"
+             Title="{Binding Title}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Refresh"
+                     Command="{Binding RefreshCommand}"
+                     IconImageSource="refresh.png"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid>
+        <!-- Loading indicator -->
+        <ActivityIndicator IsVisible="{Binding IsLoading}"
+                           IsRunning="{Binding IsLoading}"
+                           VerticalOptions="Center"
+                           HorizontalOptions="Center"/>
+
+        <!-- Error message -->
+        <Frame IsVisible="{Binding HasError}"
+               BackgroundColor="Red"
+               Padding="16"
+               Margin="16"
+               VerticalOptions="Start">
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="White"
+                   HorizontalTextAlignment="Center"/>
+        </Frame>
+
+        <!-- Content -->
+        <ScrollView IsVisible="{Binding IsNotLoading}"
+                    Padding="16">
+            <StackLayout Spacing="20">
+
+                <!-- Motivational Message -->
+                <Frame BackgroundColor="#6200EA"
+                       Padding="16"
+                       CornerRadius="12"
+                       HasShadow="True">
+                    <Label Text="{Binding MotivationalMessage}"
+                           TextColor="White"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           HorizontalTextAlignment="Center"/>
+                </Frame>
+
+                <!-- Profile Card -->
+                <Frame BackgroundColor="White"
+                       Padding="20"
+                       CornerRadius="12"
+                       HasShadow="True">
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+                          RowSpacing="15">
+                        
+                        <!-- Level Header -->
+                        <Grid Grid.Row="0"
+                              ColumnDefinitions="*,Auto">
+                            <StackLayout>
+                                <Label Text="Your Level"
+                                       FontSize="14"
+                                       TextColor="Gray"/>
+                                <Label Text="{Binding Profile.Level, StringFormat='Level {0}'}"
+                                       FontSize="32"
+                                       FontAttributes="Bold"
+                                       TextColor="#6200EA"/>
+                            </StackLayout>
+                            
+                            <Label Grid.Column="1"
+                                   Text="🎮"
+                                   FontSize="48"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+
+                        <!-- XP Progress Bar -->
+                        <StackLayout Grid.Row="1">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="Experience Points"
+                                       FontSize="12"
+                                       TextColor="Gray"/>
+                                <Label Grid.Column="1"
+                                       FontSize="12"
+                                       TextColor="Gray">
+                                    <Label.Text>
+                                        <MultiBinding StringFormat="{}{0}/{1} XP">
+                                            <Binding Path="Profile.ExperiencePoints"/>
+                                            <Binding Path="Profile.ExperienceToNextLevel"/>
+                                        </MultiBinding>
+                                    </Label.Text>
+                                </Label>
+                            </Grid>
+                            <ProgressBar Progress="{Binding Profile.LevelProgressPercentage}"
+                                         ProgressColor="#6200EA"
+                                         HeightRequest="8"
+                                         Margin="0,4,0,0"/>
+                        </StackLayout>
+
+                        <!-- Stats Grid -->
+                        <Grid Grid.Row="2"
+                              ColumnDefinitions="*,*,*"
+                              ColumnSpacing="10">
+                            <!-- Total Points -->
+                            <Frame BackgroundColor="#E8EAF6"
+                                   Padding="12"
+                                   CornerRadius="8">
+                                <StackLayout HorizontalOptions="Center">
+                                    <Label Text="💰"
+                                           FontSize="24"
+                                           HorizontalTextAlignment="Center"/>
+                                    <Label Text="{Binding Profile.TotalPoints}"
+                                           FontSize="20"
+                                           FontAttributes="Bold"
+                                           HorizontalTextAlignment="Center"/>
+                                    <Label Text="Points"
+                                           FontSize="10"
+                                           TextColor="Gray"
+                                           HorizontalTextAlignment="Center"/>
+                                </StackLayout>
+                            </Frame>
+
+                            <!-- Current Streak -->
+                            <Frame Grid.Column="1"
+                                   BackgroundColor="#FFE0B2"
+                                   Padding="12"
+                                   CornerRadius="8">
+                                <StackLayout HorizontalOptions="Center">
+                                    <Label Text="🔥"
+                                           FontSize="24"
+                                           HorizontalTextAlignment="Center"/>
+                                    <Label Text="{Binding Profile.CurrentStreak}"
+                                           FontSize="20"
+                                           FontAttributes="Bold"
+                                           HorizontalTextAlignment="Center"/>
+                                    <Label Text="Day Streak"
+                                           FontSize="10"
+                                           TextColor="Gray"
+                                           HorizontalTextAlignment="Center"/>
+                                </StackLayout>
+                            </Frame>
+
+                            <!-- Expenses Tracked -->
+                            <Frame Grid.Column="2"
+                                   BackgroundColor="#C8E6C9"
+                                   Padding="12"
+                                   CornerRadius="8">
+                                <StackLayout HorizontalOptions="Center">
+                                    <Label Text="📊"
+                                           FontSize="24"
+                                           HorizontalTextAlignment="Center"/>
+                                    <Label Text="{Binding Profile.TotalExpensesTracked}"
+                                           FontSize="20"
+                                           FontAttributes="Bold"
+                                           HorizontalTextAlignment="Center"/>
+                                    <Label Text="Tracked"
+                                           FontSize="10"
+                                           TextColor="Gray"
+                                           HorizontalTextAlignment="Center"/>
+                                </StackLayout>
+                            </Frame>
+                        </Grid>
+
+                        <!-- Longest Streak -->
+                        <Frame Grid.Row="3"
+                               BackgroundColor="#FFF3E0"
+                               Padding="12"
+                               CornerRadius="8">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <Label Text="🏆"
+                                       FontSize="24"
+                                       VerticalOptions="Center"/>
+                                <StackLayout Grid.Column="1"
+                                           Margin="10,0,0,0"
+                                           VerticalOptions="Center">
+                                    <Label Text="Longest Streak"
+                                           FontSize="12"
+                                           TextColor="Gray"/>
+                                    <Label Text="{Binding Profile.LongestStreak, StringFormat='{0} days'}"
+                                           FontSize="18"
+                                           FontAttributes="Bold"/>
+                                </StackLayout>
+                            </Grid>
+                        </Frame>
+                    </Grid>
+                </Frame>
+
+                <!-- Budget Goal Progress (70-20-10 Rule) -->
+                <Frame BackgroundColor="White"
+                       Padding="16"
+                       CornerRadius="12"
+                       HasShadow="True"
+                       IsVisible="{Binding BudgetGoalTracker, Converter={StaticResource IsNotNullConverter}}">
+                    <StackLayout>
+                        <Label Text="🎯 Budget Goals (70-20-10 Rule)"
+                               FontAttributes="Bold"
+                               FontSize="18"
+                               Margin="0,0,0,10"/>
+                        
+                        <Label Text="{Binding BudgetGoalTracker.ProgressMessage}"
+                               FontSize="14"
+                               TextColor="#6200EA"
+                               Margin="0,0,0,10"/>
+
+                        <!-- Essentials (70%) -->
+                        <StackLayout Margin="0,8,0,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="🏠 Essentials (70%)"
+                                       FontSize="14"
+                                       FontAttributes="Bold"/>
+                                <Label Grid.Column="1"
+                                       FontSize="12"
+                                       TextColor="Gray">
+                                    <Label.Text>
+                                        <MultiBinding StringFormat="{}{0:C} / {1:C}">
+                                            <Binding Path="BudgetGoalTracker.EssentialsSpent"/>
+                                            <Binding Path="BudgetGoalTracker.EssentialsTarget"/>
+                                        </MultiBinding>
+                                    </Label.Text>
+                                </Label>
+                            </Grid>
+                            <ProgressBar Progress="{Binding BudgetGoalTracker.EssentialsProgressBar}"
+                                         ProgressColor="#FF9800"
+                                         HeightRequest="8"
+                                         Margin="0,4,0,0"/>
+                        </StackLayout>
+
+                        <!-- Savings (20%) -->
+                        <StackLayout Margin="0,8,0,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="💰 Savings and Investments (20%)"
+                                       FontSize="14"
+                                       FontAttributes="Bold"/>
+                                <Label Grid.Column="1"
+                                       FontSize="12"
+                                       TextColor="Gray">
+                                    <Label.Text>
+                                        <MultiBinding StringFormat="{}{0:C} / {1:C}">
+                                            <Binding Path="BudgetGoalTracker.SavingsInvested"/>
+                                            <Binding Path="BudgetGoalTracker.SavingsTarget"/>
+                                        </MultiBinding>
+                                    </Label.Text>
+                                </Label>
+                            </Grid>
+                            <ProgressBar Progress="{Binding BudgetGoalTracker.SavingsProgressBar}"
+                                         ProgressColor="#4CAF50"
+                                         HeightRequest="8"
+                                         Margin="0,4,0,0"/>
+                        </StackLayout>
+
+                        <!-- Discretionary (10%) -->
+                        <StackLayout Margin="0,8,0,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="🎉 Discretionary (10%)"
+                                       FontSize="14"
+                                       FontAttributes="Bold"/>
+                                <Label Grid.Column="1"
+                                       FontSize="12"
+                                       TextColor="Gray">
+                                    <Label.Text>
+                                        <MultiBinding StringFormat="{}{0:C} / {1:C}">
+                                            <Binding Path="BudgetGoalTracker.DiscretionarySpent"/>
+                                            <Binding Path="BudgetGoalTracker.DiscretionaryTarget"/>
+                                        </MultiBinding>
+                                    </Label.Text>
+                                </Label>
+                            </Grid>
+                            <ProgressBar Progress="{Binding BudgetGoalTracker.DiscretionaryProgressBar}"
+                                         ProgressColor="#2196F3"
+                                         HeightRequest="8"
+                                         Margin="0,4,0,0"/>
+                        </StackLayout>
+                    </StackLayout>
+                </Frame>
+
+                <!-- Recently Unlocked Achievements -->
+                <Frame BackgroundColor="White"
+                       Padding="16"
+                       CornerRadius="12"
+                       HasShadow="True"
+                       IsVisible="{Binding HasRecentAchievements}">
+                    <StackLayout>
+                        <Label Text="🎉 Recently Unlocked"
+                               FontAttributes="Bold"
+                               FontSize="18"
+                               Margin="0,0,0,10"/>
+                        <CollectionView ItemsSource="{Binding RecentAchievements}"
+                                        HeightRequest="120">
+                            <CollectionView.ItemsLayout>
+                                <LinearItemsLayout Orientation="Horizontal"
+                                                 ItemSpacing="10"/>
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Achievement">
+                                    <Frame BackgroundColor="#E8F5E9"
+                                           Padding="16"
+                                           CornerRadius="12"
+                                           WidthRequest="120">
+                                        <StackLayout HorizontalOptions="Center">
+                                            <Label Text="{Binding Icon}"
+                                                   FontSize="36"
+                                                   HorizontalTextAlignment="Center"/>
+                                            <Label Text="{Binding Name}"
+                                                   FontSize="12"
+                                                   FontAttributes="Bold"
+                                                   HorizontalTextAlignment="Center"
+                                                   LineBreakMode="WordWrap"/>
+                                            <Label Text="{Binding PointsReward, StringFormat='+{0} pts'}"
+                                                   FontSize="10"
+                                                   TextColor="Green"
+                                                   HorizontalTextAlignment="Center"/>
+                                        </StackLayout>
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </StackLayout>
+                </Frame>
+
+                <!-- All Achievements -->
+                <Frame BackgroundColor="White"
+                       Padding="16"
+                       CornerRadius="12"
+                       HasShadow="True">
+                    <StackLayout>
+                        <Label Text="🏆 All Achievements"
+                               FontAttributes="Bold"
+                               FontSize="18"
+                               Margin="0,0,0,10"/>
+                        
+                        <CollectionView ItemsSource="{Binding Achievements}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Achievement">
+                                    <Frame Padding="12"
+                                           Margin="0,4"
+                                           CornerRadius="8"
+                                           HasShadow="False">
+                                        <Frame.Triggers>
+                                            <DataTrigger TargetType="Frame"
+                                                       Binding="{Binding IsUnlocked}"
+                                                       Value="True">
+                                                <Setter Property="BackgroundColor" Value="#E8F5E9"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Frame"
+                                                       Binding="{Binding IsUnlocked}"
+                                                       Value="False">
+                                                <Setter Property="BackgroundColor" Value="#F5F5F5"/>
+                                            </DataTrigger>
+                                        </Frame.Triggers>
+                                        
+                                        <Grid ColumnDefinitions="Auto,*,Auto"
+                                              ColumnSpacing="12">
+                                            <!-- Icon -->
+                                            <Label Grid.Column="0"
+                                                   FontSize="32"
+                                                   VerticalOptions="Center">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label"
+                                                               Binding="{Binding IsUnlocked}"
+                                                               Value="True">
+                                                        <Setter Property="Text" Value="{Binding Icon}"/>
+                                                        <Setter Property="Opacity" Value="1"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label"
+                                                               Binding="{Binding IsUnlocked}"
+                                                               Value="False">
+                                                        <Setter Property="Text" Value="🔒"/>
+                                                        <Setter Property="Opacity" Value="0.5"/>
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+
+                                            <!-- Details -->
+                                            <StackLayout Grid.Column="1"
+                                                       VerticalOptions="Center">
+                                                <Label Text="{Binding Name}"
+                                                       FontSize="16"
+                                                       FontAttributes="Bold"/>
+                                                <Label Text="{Binding Description}"
+                                                       FontSize="12"
+                                                       TextColor="Gray"/>
+                                                <Label Text="{Binding UnlockedDate, StringFormat='Unlocked: {0:MMM dd, yyyy}'}"
+                                                       FontSize="10"
+                                                       TextColor="Green"
+                                                       IsVisible="{Binding IsUnlocked}"/>
+                                            </StackLayout>
+
+                                            <!-- Points -->
+                                            <Label Grid.Column="2"
+                                                   Text="{Binding PointsReward, StringFormat='{0} pts'}"
+                                                   FontSize="14"
+                                                   FontAttributes="Bold"
+                                                   TextColor="#6200EA"
+                                                   VerticalOptions="Center"/>
+                                        </Grid>
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </StackLayout>
+                </Frame>
+
+            </StackLayout>
+        </ScrollView>
+
+        <!-- Achievement Unlocked Popup -->
+        <Frame IsVisible="{Binding ShowAchievementUnlocked}"
+               BackgroundColor="#6200EA"
+               Padding="20"
+               CornerRadius="16"
+               VerticalOptions="Center"
+               HorizontalOptions="Center"
+               WidthRequest="300"
+               HasShadow="True">
+            <StackLayout Spacing="15">
+                <Label Text="🎉 Achievement Unlocked! 🎉"
+                       TextColor="White"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       HorizontalTextAlignment="Center"/>
+                
+                <Label Text="{Binding LastUnlockedAchievement.Icon}"
+                       FontSize="64"
+                       HorizontalTextAlignment="Center"/>
+                
+                <Label Text="{Binding LastUnlockedAchievement.Name}"
+                       TextColor="White"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       HorizontalTextAlignment="Center"/>
+                
+                <Label Text="{Binding LastUnlockedAchievement.Description}"
+                       TextColor="White"
+                       FontSize="14"
+                       HorizontalTextAlignment="Center"/>
+                
+                <Label Text="{Binding LastUnlockedAchievement.PointsReward, StringFormat='+{0} Points!'}"
+                       TextColor="#FFD700"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       HorizontalTextAlignment="Center"/>
+                
+                <Button Text="Awesome!"
+                        Command="{Binding DismissAchievementNotificationCommand}"
+                        BackgroundColor="White"
+                        TextColor="#6200EA"
+                        CornerRadius="8"
+                        Margin="0,10,0,0"/>
+            </StackLayout>
+        </Frame>
+    </Grid>
+</ContentPage>

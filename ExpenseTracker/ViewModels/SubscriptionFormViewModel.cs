@@ -10,6 +10,7 @@ namespace ExpenseTracker.ViewModels;
 public partial class SubscriptionFormViewModel : BaseViewModel
 {
     private readonly ExpenseService _expenseService;
+    private readonly GamificationService _gamificationService;
 
     [ObservableProperty]
     private Subscription subscription = new();
@@ -22,9 +23,10 @@ public partial class SubscriptionFormViewModel : BaseViewModel
 
     public List<BillingCycle> BillingCycles { get; } = Enum.GetValues<BillingCycle>().ToList();
 
-    public SubscriptionFormViewModel(ExpenseService expenseService)
+    public SubscriptionFormViewModel(ExpenseService expenseService, GamificationService gamificationService)
     {
         _expenseService = expenseService;
+        _gamificationService = gamificationService;
     }
 
     partial void OnSubscriptionChanged(Subscription value)
@@ -72,6 +74,19 @@ public partial class SubscriptionFormViewModel : BaseViewModel
             {
                 Subscription.CreatedAt = DateTime.UtcNow;
                 await _expenseService.CreateSubscriptionAsync(Subscription);
+                
+                // Award points for adding a new subscription
+                var newAchievements = await _gamificationService.RecordExpenseTrackedAsync();
+                
+                // Show achievement notification if any were unlocked
+                if (newAchievements.Any())
+                {
+                    var achievement = newAchievements.First();
+                    await Application.Current!.MainPage!.DisplayAlert(
+                        "🎉 Achievement Unlocked!",
+                        $"{achievement.Icon} {achievement.Name}\n{achievement.Description}\n+{achievement.PointsReward} Points!",
+                        "Awesome!");
+                }
             }
 
             await Shell.Current.GoToAsync("..");

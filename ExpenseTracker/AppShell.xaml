@@ -12,6 +12,11 @@
                       Route="dashboard"
                       Icon="home.png"/>
 
+        <ShellContent Title="Achievements"
+                      ContentTemplate="{DataTemplate views:GamificationPage}"
+                      Route="gamification"
+                      Icon="trophy.png"/>
+
         <ShellContent Title="Subscriptions"
                       ContentTemplate="{DataTemplate views:SubscriptionsPage}"
                       Route="subscriptions"
