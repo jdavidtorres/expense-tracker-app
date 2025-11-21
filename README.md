@@ -5,11 +5,22 @@ A cross-platform .NET MAUI application for tracking subscriptions and invoices w
 ## Features
 
 - **Dashboard**: View monthly and yearly expense summaries with category breakdowns
+- **🎮 Gamification System**: Level up, earn achievements, and build streaks while tracking expenses
 - **Subscriptions Management**: Add, edit, delete, and manage recurring subscriptions
 - **Invoices Management**: Track one-time invoices with status management
 - **Cross-Platform**: Runs on Android, iOS, macOS, and Windows
 - **MVVM Architecture**: Clean separation using CommunityToolkit.Mvvm
 - **REST API Integration**: Connects to backend API at localhost:8083
+
+### 🎯 Gamification Features
+- **Level & XP System**: Progress through levels by earning experience points
+- **12 Achievements**: Unlock badges for tracking milestones and streaks
+- **Daily Streaks**: Build momentum with consecutive daily tracking
+- **Point Rewards**: Earn points for every action (10 pts per expense tracked)
+- **Visual Progress**: See your stats with colorful cards and progress bars
+- **Motivational Messages**: Get encouraging feedback based on your progress
+
+See [GAMIFICATION.md](GAMIFICATION.md) for complete details about the gamification system.
 
 ## 📱 Download & Installation
 
