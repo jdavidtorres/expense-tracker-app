@@ -22,16 +22,70 @@ public class ExpenseService
         };
     }
 
+    /// <summary>
+    /// Helper method to perform GET requests and deserialize response
+    /// </summary>
+    private async Task<T> GetAsync<T>(string endpoint, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync(endpoint, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        return JsonSerializer.Deserialize<T>(json, _jsonOptions)
+            ?? throw new InvalidOperationException($"Failed to deserialize response from {endpoint}");
+    }
+
+    /// <summary>
+    /// Helper method to perform POST requests with JSON content
+    /// </summary>
+    private async Task<T> PostAsync<T>(string endpoint, object content, CancellationToken cancellationToken = default)
+    {
+        var json = JsonSerializer.Serialize(content, _jsonOptions);
+        var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PostAsync(endpoint, httpContent, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        var responseJson = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        return JsonSerializer.Deserialize<T>(responseJson, _jsonOptions)
+            ?? throw new InvalidOperationException($"Failed to deserialize response from {endpoint}");
+    }
+
+    /// <summary>
+    /// Helper method to perform PUT requests with JSON content
+    /// </summary>
+    private async Task<T> PutAsync<T>(string endpoint, object content, CancellationToken cancellationToken = default)
+    {
+        var json = JsonSerializer.Serialize(content, _jsonOptions);
+        var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PutAsync(endpoint, httpContent, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        var responseJson = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        return JsonSerializer.Deserialize<T>(responseJson, _jsonOptions)
+            ?? throw new InvalidOperationException($"Failed to deserialize response from {endpoint}");
+    }
+
+    /// <summary>
+    /// Helper method to perform DELETE requests
+    /// </summary>
+    private async Task DeleteAsync(string endpoint, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync(endpoint, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+    }
+
     // Subscription methods
-    public async Task<List<Subscription>> GetSubscriptionsAsync()
+    /// <summary>
+    /// Gets all subscriptions
+    /// </summary>
+    public async Task<List<Subscription>> GetSubscriptionsAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var response = await _httpClient.GetAsync("subscriptions");
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<List<Subscription>>(json, _jsonOptions) ?? new List<Subscription>();
+            return await GetAsync<List<Subscription>>("subscriptions", cancellationToken).ConfigureAwait(false) 
+                ?? new List<Subscription>();
         }
         catch (Exception ex)
         {
@@ -40,16 +94,16 @@ public class ExpenseService
         }
     }
 
-    public async Task<Subscription> GetSubscriptionAsync(string id)
+    /// <summary>
+    /// Gets a specific subscription by ID
+    /// </summary>
+    public async Task<Subscription> GetSubscriptionAsync(string id, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+
         try
         {
-            var response = await _httpClient.GetAsync($"subscriptions/{id}");
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<Subscription>(json, _jsonOptions)
-                ?? throw new InvalidOperationException("Subscription not found");
+            return await GetAsync<Subscription>($"subscriptions/{id}", cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -58,19 +112,16 @@ public class ExpenseService
         }
     }
 
-    public async Task<Subscription> CreateSubscriptionAsync(Subscription subscription)
+    /// <summary>
+    /// Creates a new subscription
+    /// </summary>
+    public async Task<Subscription> CreateSubscriptionAsync(Subscription subscription, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(subscription);
+
         try
         {
-            var json = JsonSerializer.Serialize(subscription, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync("subscriptions", content);
-            response.EnsureSuccessStatusCode();
-
-            var responseJson = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<Subscription>(responseJson, _jsonOptions)
-                ?? throw new InvalidOperationException("Failed to create subscription");
+            return await PostAsync<Subscription>("subscriptions", subscription, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -79,19 +130,17 @@ public class ExpenseService
         }
     }
 
-    public async Task<Subscription> UpdateSubscriptionAsync(Subscription subscription)
+    /// <summary>
+    /// Updates an existing subscription
+    /// </summary>
+    public async Task<Subscription> UpdateSubscriptionAsync(Subscription subscription, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(subscription);
+        ArgumentException.ThrowIfNullOrWhiteSpace(subscription.Id);
+
         try
         {
-            var json = JsonSerializer.Serialize(subscription, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PutAsync($"subscriptions/{subscription.Id}", content);
-            response.EnsureSuccessStatusCode();
-
-            var responseJson = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<Subscription>(responseJson, _jsonOptions)
-                ?? throw new InvalidOperationException("Failed to update subscription");
+            return await PutAsync<Subscription>($"subscriptions/{subscription.Id}", subscription, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -100,12 +149,16 @@ public class ExpenseService
         }
     }
 
-    public async Task DeleteSubscriptionAsync(string id)
+    /// <summary>
+    /// Deletes a subscription by ID
+    /// </summary>
+    public async Task DeleteSubscriptionAsync(string id, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+
         try
         {
-            var response = await _httpClient.DeleteAsync($"subscriptions/{id}");
-            response.EnsureSuccessStatusCode();
+            await DeleteAsync($"subscriptions/{id}", cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -115,15 +168,15 @@ public class ExpenseService
     }
 
     // Invoice methods
-    public async Task<List<Invoice>> GetInvoicesAsync()
+    /// <summary>
+    /// Gets all invoices
+    /// </summary>
+    public async Task<List<Invoice>> GetInvoicesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var response = await _httpClient.GetAsync("invoices");
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<List<Invoice>>(json, _jsonOptions) ?? new List<Invoice>();
+            return await GetAsync<List<Invoice>>("invoices", cancellationToken).ConfigureAwait(false)
+                ?? new List<Invoice>();
         }
         catch (Exception ex)
         {
@@ -132,16 +185,16 @@ public class ExpenseService
         }
     }
 
-    public async Task<Invoice> GetInvoiceAsync(string id)
+    /// <summary>
+    /// Gets a specific invoice by ID
+    /// </summary>
+    public async Task<Invoice> GetInvoiceAsync(string id, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+
         try
         {
-            var response = await _httpClient.GetAsync($"invoices/{id}");
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<Invoice>(json, _jsonOptions)
-                ?? throw new InvalidOperationException("Invoice not found");
+            return await GetAsync<Invoice>($"invoices/{id}", cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -150,19 +203,16 @@ public class ExpenseService
         }
     }
 
-    public async Task<Invoice> CreateInvoiceAsync(Invoice invoice)
+    /// <summary>
+    /// Creates a new invoice
+    /// </summary>
+    public async Task<Invoice> CreateInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(invoice);
+
         try
         {
-            var json = JsonSerializer.Serialize(invoice, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync("invoices", content);
-            response.EnsureSuccessStatusCode();
-
-            var responseJson = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<Invoice>(responseJson, _jsonOptions)
-                ?? throw new InvalidOperationException("Failed to create invoice");
+            return await PostAsync<Invoice>("invoices", invoice, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -171,19 +221,17 @@ public class ExpenseService
         }
     }
 
-    public async Task<Invoice> UpdateInvoiceAsync(Invoice invoice)
+    /// <summary>
+    /// Updates an existing invoice
+    /// </summary>
+    public async Task<Invoice> UpdateInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(invoice);
+        ArgumentException.ThrowIfNullOrWhiteSpace(invoice.Id);
+
         try
         {
-            var json = JsonSerializer.Serialize(invoice, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PutAsync($"invoices/{invoice.Id}", content);
-            response.EnsureSuccessStatusCode();
-
-            var responseJson = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<Invoice>(responseJson, _jsonOptions)
-                ?? throw new InvalidOperationException("Failed to update invoice");
+            return await PutAsync<Invoice>($"invoices/{invoice.Id}", invoice, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -192,12 +240,16 @@ public class ExpenseService
         }
     }
 
-    public async Task DeleteInvoiceAsync(string id)
+    /// <summary>
+    /// Deletes an invoice by ID
+    /// </summary>
+    public async Task DeleteInvoiceAsync(string id, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+
         try
         {
-            var response = await _httpClient.DeleteAsync($"invoices/{id}");
-            response.EnsureSuccessStatusCode();
+            await DeleteAsync($"invoices/{id}", cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -207,16 +259,14 @@ public class ExpenseService
     }
 
     // Summary methods
-    public async Task<MonthlySummary> GetMonthlySummaryAsync(int year, int month)
+    /// <summary>
+    /// Gets monthly summary for a specific year and month
+    /// </summary>
+    public async Task<MonthlySummary> GetMonthlySummaryAsync(int year, int month, CancellationToken cancellationToken = default)
     {
         try
         {
-            var response = await _httpClient.GetAsync($"summary/monthly?year={year}&month={month}");
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<MonthlySummary>(json, _jsonOptions)
-                ?? throw new InvalidOperationException("Monthly summary not found");
+            return await GetAsync<MonthlySummary>($"summary/monthly?year={year}&month={month}", cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -225,16 +275,14 @@ public class ExpenseService
         }
     }
 
-    public async Task<YearlySummary> GetYearlySummaryAsync(int year)
+    /// <summary>
+    /// Gets yearly summary for a specific year
+    /// </summary>
+    public async Task<YearlySummary> GetYearlySummaryAsync(int year, CancellationToken cancellationToken = default)
     {
         try
         {
-            var response = await _httpClient.GetAsync($"summary/yearly?year={year}");
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<YearlySummary>(json, _jsonOptions)
-                ?? throw new InvalidOperationException("Yearly summary not found");
+            return await GetAsync<YearlySummary>($"summary/yearly?year={year}", cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -243,15 +291,15 @@ public class ExpenseService
         }
     }
 
-    public async Task<List<CategorySummary>> GetCategorySummaryAsync()
+    /// <summary>
+    /// Gets category summary
+    /// </summary>
+    public async Task<List<CategorySummary>> GetCategorySummaryAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var response = await _httpClient.GetAsync("summary/categories");
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<List<CategorySummary>>(json, _jsonOptions) ?? new List<CategorySummary>();
+            return await GetAsync<List<CategorySummary>>("summary/categories", cancellationToken).ConfigureAwait(false)
+                ?? new List<CategorySummary>();
         }
         catch (Exception ex)
         {
