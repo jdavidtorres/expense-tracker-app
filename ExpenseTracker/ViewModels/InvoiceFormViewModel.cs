@@ -63,15 +63,15 @@ public partial class InvoiceFormViewModel : BaseViewModel
 
             if (IsEditing)
             {
-                await _expenseService.UpdateInvoiceAsync(Invoice).ConfigureAwait(false);
+                await _expenseService.UpdateInvoiceAsync(Invoice);
             }
             else
             {
                 Invoice.CreatedAt = DateTime.UtcNow;
-                await _expenseService.CreateInvoiceAsync(Invoice).ConfigureAwait(false);
+                await _expenseService.CreateInvoiceAsync(Invoice);
                 
                 // Award points for adding a new invoice
-                var newAchievements = await _gamificationService.RecordExpenseTrackedAsync().ConfigureAwait(false);
+                var newAchievements = await _gamificationService.RecordExpenseTrackedAsync();
                 
                 // Show achievement notification if any were unlocked
                 if (newAchievements.Any())
@@ -80,11 +80,11 @@ public partial class InvoiceFormViewModel : BaseViewModel
                     await Application.Current!.MainPage!.DisplayAlert(
                         "🎉 Achievement Unlocked!",
                         $"{achievement.Icon} {achievement.Name}\n{achievement.Description}\n+{achievement.PointsReward} Points!",
-                        "Awesome!").ConfigureAwait(false);
+                        "Awesome!");
                 }
             }
 
-            await Shell.Current.GoToAsync("..").ConfigureAwait(false);
+            await Shell.Current.GoToAsync("..");
         }
         catch (Exception ex)
         {
@@ -99,7 +99,7 @@ public partial class InvoiceFormViewModel : BaseViewModel
     [RelayCommand]
     private async Task CancelAsync()
     {
-        await Shell.Current.GoToAsync("..").ConfigureAwait(false);
+        await Shell.Current.GoToAsync("..");
     }
 
     /// <summary>

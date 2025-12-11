@@ -38,13 +38,13 @@ public partial class InvoicesViewModel : BaseViewModel
             IsLoading = true;
             ClearError();
 
-            var allInvoices = await _expenseService.GetInvoicesAsync().ConfigureAwait(false);
+            var allInvoices = await _expenseService.GetInvoicesAsync();
 
-            var invoicesList = ShowAllStatuses 
-                ? allInvoices 
-                : allInvoices.Where(i => i.Status == FilterStatus).ToList();
-            
-            Invoices = new ObservableCollection<Invoice>(invoicesList);
+            Invoices = new ObservableCollection<Invoice>(
+                ShowAllStatuses
+                    ? allInvoices
+                    : allInvoices.Where(i => i.Status == FilterStatus)
+            );
         }
         catch (Exception ex)
         {
@@ -64,8 +64,8 @@ public partial class InvoicesViewModel : BaseViewModel
 
         try
         {
-            await _expenseService.DeleteInvoiceAsync(id).ConfigureAwait(false);
-            await LoadInvoicesAsync().ConfigureAwait(false);
+            await _expenseService.DeleteInvoiceAsync(id);
+            await LoadInvoicesAsync();
         }
         catch (Exception ex)
         {
@@ -83,8 +83,8 @@ public partial class InvoicesViewModel : BaseViewModel
         {
             // Update invoice status to paid
             invoice.Status = InvoiceStatus.Paid;
-            await _expenseService.UpdateInvoiceAsync(invoice).ConfigureAwait(false);
-            await LoadInvoicesAsync().ConfigureAwait(false);
+            await _expenseService.UpdateInvoiceAsync(invoice);
+            await LoadInvoicesAsync();
         }
         catch (Exception ex)
         {
@@ -95,7 +95,7 @@ public partial class InvoicesViewModel : BaseViewModel
     [RelayCommand]
     private async Task NavigateToAddInvoiceAsync()
     {
-        await Shell.Current.GoToAsync("add-invoice").ConfigureAwait(false);
+        await Shell.Current.GoToAsync("add-invoice");
     }
 
     [RelayCommand]
@@ -104,13 +104,13 @@ public partial class InvoicesViewModel : BaseViewModel
         if (invoice == null)
             return;
 
-        await Shell.Current.GoToAsync($"edit-invoice?id={invoice.Id}").ConfigureAwait(false);
+        await Shell.Current.GoToAsync($"edit-invoice?id={invoice.Id}");
     }
 
     [RelayCommand]
     private async Task RefreshAsync()
     {
-        await LoadInvoicesAsync().ConfigureAwait(false);
+        await LoadInvoicesAsync();
     }
 
     partial void OnFilterStatusChanged(InvoiceStatus value)

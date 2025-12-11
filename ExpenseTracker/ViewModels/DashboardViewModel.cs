@@ -52,25 +52,25 @@ public partial class DashboardViewModel : BaseViewModel
             var now = DateTime.Now;
 
             // Load gamification profile
-            GamificationProfile = await _gamificationService.GetProfileAsync().ConfigureAwait(false);
-            MotivationalMessage = await _gamificationService.GetMotivationalMessageAsync().ConfigureAwait(false);
+            GamificationProfile = await _gamificationService.GetProfileAsync();
+            MotivationalMessage = await _gamificationService.GetMotivationalMessageAsync();
 
             // Load monthly summary
-            CurrentMonthSummary = await _expenseService.GetMonthlySummaryAsync(now.Year, now.Month).ConfigureAwait(false);
+            CurrentMonthSummary = await _expenseService.GetMonthlySummaryAsync(now.Year, now.Month);
 
             // Load yearly summary
-            CurrentYearSummary = await _expenseService.GetYearlySummaryAsync(now.Year).ConfigureAwait(false);
+            CurrentYearSummary = await _expenseService.GetYearlySummaryAsync(now.Year);
 
             // Load category breakdown
-            var categories = await _expenseService.GetCategorySummaryAsync().ConfigureAwait(false);
+            var categories = await _expenseService.GetCategorySummaryAsync();
             CategoryBreakdown = new ObservableCollection<CategorySummary>(categories);
 
             // Load recent subscriptions (top 5)
-            var subscriptions = await _expenseService.GetSubscriptionsAsync().ConfigureAwait(false);
+            var subscriptions = await _expenseService.GetSubscriptionsAsync();
             RecentSubscriptions = new ObservableCollection<Subscription>(subscriptions.Take(5));
 
             // Load recent invoices (top 5)
-            var invoices = await _expenseService.GetInvoicesAsync().ConfigureAwait(false);
+            var invoices = await _expenseService.GetInvoicesAsync();
             RecentInvoices = new ObservableCollection<Invoice>(invoices.Take(5));
         }
         catch (Exception ex)
@@ -86,24 +86,24 @@ public partial class DashboardViewModel : BaseViewModel
     [RelayCommand]
     private async Task NavigateToSubscriptionsAsync()
     {
-        await Shell.Current.GoToAsync("subscriptions").ConfigureAwait(false);
+        await Shell.Current.GoToAsync("subscriptions");
     }
 
     [RelayCommand]
     private async Task NavigateToInvoicesAsync()
     {
-        await Shell.Current.GoToAsync("invoices").ConfigureAwait(false);
+        await Shell.Current.GoToAsync("invoices");
     }
 
     [RelayCommand]
     private async Task RefreshAsync()
     {
-        await LoadDashboardDataAsync().ConfigureAwait(false);
+        await LoadDashboardDataAsync();
     }
 
     [RelayCommand]
     private async Task NavigateToGamificationAsync()
     {
-        await Shell.Current.GoToAsync("gamification").ConfigureAwait(false);
+        await Shell.Current.GoToAsync("gamification");
     }
 }

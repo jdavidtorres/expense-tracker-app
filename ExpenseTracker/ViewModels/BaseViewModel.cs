@@ -48,7 +48,7 @@ public abstract partial class BaseViewModel : ObservableObject
         {
             IsLoading = true;
             ClearError();
-            await action().ConfigureAwait(false);
+            await action();
         }
         catch (Exception ex)
         {
@@ -73,7 +73,7 @@ public abstract partial class BaseViewModel : ObservableObject
         {
             IsLoading = true;
             ClearError();
-            return await func().ConfigureAwait(false);
+            return await func();
         }
         catch (Exception ex)
         {

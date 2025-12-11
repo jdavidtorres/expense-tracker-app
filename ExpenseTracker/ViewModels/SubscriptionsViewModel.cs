@@ -32,7 +32,7 @@ public partial class SubscriptionsViewModel : BaseViewModel
             IsLoading = true;
             ClearError();
 
-            var data = await _expenseService.GetSubscriptionsAsync().ConfigureAwait(false);
+            var data = await _expenseService.GetSubscriptionsAsync();
             Subscriptions = new ObservableCollection<Subscription>(data);
         }
         catch (Exception ex)
@@ -53,8 +53,8 @@ public partial class SubscriptionsViewModel : BaseViewModel
 
         try
         {
-            await _expenseService.DeleteSubscriptionAsync(id).ConfigureAwait(false);
-            await LoadSubscriptionsAsync().ConfigureAwait(false);
+            await _expenseService.DeleteSubscriptionAsync(id);
+            await LoadSubscriptionsAsync();
         }
         catch (Exception ex)
         {
@@ -65,7 +65,7 @@ public partial class SubscriptionsViewModel : BaseViewModel
     [RelayCommand]
     private async Task NavigateToAddSubscriptionAsync()
     {
-        await Shell.Current.GoToAsync("add-subscription").ConfigureAwait(false);
+        await Shell.Current.GoToAsync("add-subscription");
     }
 
     [RelayCommand]
@@ -74,12 +74,12 @@ public partial class SubscriptionsViewModel : BaseViewModel
         if (subscription == null)
             return;
 
-        await Shell.Current.GoToAsync($"edit-subscription?id={subscription.Id}").ConfigureAwait(false);
+        await Shell.Current.GoToAsync($"edit-subscription?id={subscription.Id}");
     }
 
     [RelayCommand]
     private async Task RefreshAsync()
     {
-        await LoadSubscriptionsAsync().ConfigureAwait(false);
+        await LoadSubscriptionsAsync();
     }
 }

@@ -63,15 +63,15 @@ public partial class SubscriptionFormViewModel : BaseViewModel
 
             if (IsEditing)
             {
-                await _expenseService.UpdateSubscriptionAsync(Subscription).ConfigureAwait(false);
+                await _expenseService.UpdateSubscriptionAsync(Subscription);
             }
             else
             {
                 Subscription.CreatedAt = DateTime.UtcNow;
-                await _expenseService.CreateSubscriptionAsync(Subscription).ConfigureAwait(false);
+                await _expenseService.CreateSubscriptionAsync(Subscription);
                 
                 // Award points for adding a new subscription
-                var newAchievements = await _gamificationService.RecordExpenseTrackedAsync().ConfigureAwait(false);
+                var newAchievements = await _gamificationService.RecordExpenseTrackedAsync();
                 
                 // Show achievement notification if any were unlocked
                 if (newAchievements.Any())
@@ -80,11 +80,11 @@ public partial class SubscriptionFormViewModel : BaseViewModel
                     await Application.Current!.MainPage!.DisplayAlert(
                         "🎉 Achievement Unlocked!",
                         $"{achievement.Icon} {achievement.Name}\n{achievement.Description}\n+{achievement.PointsReward} Points!",
-                        "Awesome!").ConfigureAwait(false);
+                        "Awesome!");
                 }
             }
 
-            await Shell.Current.GoToAsync("..").ConfigureAwait(false);
+            await Shell.Current.GoToAsync("..");
         }
         catch (Exception ex)
         {
@@ -99,7 +99,7 @@ public partial class SubscriptionFormViewModel : BaseViewModel
     [RelayCommand]
     private async Task CancelAsync()
     {
-        await Shell.Current.GoToAsync("..").ConfigureAwait(false);
+        await Shell.Current.GoToAsync("..");
     }
 
     /// <summary>
