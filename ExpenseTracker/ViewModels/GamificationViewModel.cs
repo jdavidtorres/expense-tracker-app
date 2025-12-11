@@ -6,6 +6,9 @@ using ExpenseTracker.Services;
 
 namespace ExpenseTracker.ViewModels;
 
+/// <summary>
+/// ViewModel for gamification features including achievements, levels, and progress tracking
+/// </summary>
 public partial class GamificationViewModel : BaseViewModel
 {
     private readonly GamificationService _gamificationService;
@@ -28,6 +31,9 @@ public partial class GamificationViewModel : BaseViewModel
     [ObservableProperty]
     private BudgetGoalTracker? budgetGoalTracker;
 
+    /// <summary>
+    /// Gets a value indicating whether there are recent achievements to display
+    /// </summary>
     public bool HasRecentAchievements => RecentAchievements.Count > 0;
 
     [ObservableProperty]
@@ -41,7 +47,7 @@ public partial class GamificationViewModel : BaseViewModel
 
     public GamificationViewModel(GamificationService gamificationService)
     {
-        _gamificationService = gamificationService;
+        _gamificationService = gamificationService ?? throw new ArgumentNullException(nameof(gamificationService));
         Title = "Achievements";
     }
 
@@ -51,10 +57,10 @@ public partial class GamificationViewModel : BaseViewModel
         try
         {
             IsLoading = true;
-            ErrorMessage = null;
+            ClearError();
 
-            Profile = await _gamificationService.GetProfileAsync();
-            var allAchievements = await _gamificationService.GetAchievementsAsync();
+            Profile = await _gamificationService.GetProfileAsync().ConfigureAwait(false);
+            var allAchievements = await _gamificationService.GetAchievementsAsync().ConfigureAwait(false);
             Achievements = new ObservableCollection<Achievement>(allAchievements);
 
             // Get recently unlocked achievements (last 3)
@@ -64,7 +70,7 @@ public partial class GamificationViewModel : BaseViewModel
                 .Take(3);
             RecentAchievements = new ObservableCollection<Achievement>(recent);
 
-            MotivationalMessage = await _gamificationService.GetMotivationalMessageAsync();
+            MotivationalMessage = await _gamificationService.GetMotivationalMessageAsync().ConfigureAwait(false);
             
             // Notify property change for HasRecentAchievements
             OnPropertyChanged(nameof(HasRecentAchievements));
@@ -82,22 +88,36 @@ public partial class GamificationViewModel : BaseViewModel
     [RelayCommand]
     private async Task RefreshAsync()
     {
-        await LoadGamificationDataAsync();
+        await LoadGamificationDataAsync().ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Updates the budget status display
+    /// </summary>
+    /// <param name="monthlyBudget">Monthly budget limit</param>
+    /// <param name="currentSpending">Current spending amount</param>
     public async Task UpdateBudgetStatusAsync(decimal monthlyBudget, decimal currentSpending)
     {
         BudgetStatus = _gamificationService.CalculateBudgetStatus(monthlyBudget, currentSpending);
+        await Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Updates the budget goal progress tracker
+    /// </summary>
     public async Task UpdateBudgetGoalProgressAsync(decimal income, decimal essentials, decimal savings, decimal discretionary)
     {
         BudgetGoalTracker = _gamificationService.CalculateBudgetGoalProgress(income, essentials, savings, discretionary);
+        await Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Records an expense tracking action and checks for new achievements
+    /// </summary>
+    /// <returns>List of newly unlocked achievements</returns>
     public async Task<List<Achievement>> RecordExpenseTrackedAsync()
     {
-        var newAchievements = await _gamificationService.RecordExpenseTrackedAsync();
+        var newAchievements = await _gamificationService.RecordExpenseTrackedAsync().ConfigureAwait(false);
         
         if (newAchievements.Any())
         {
@@ -105,7 +125,7 @@ public partial class GamificationViewModel : BaseViewModel
             ShowAchievementUnlocked = true;
             
             // Refresh data
-            await LoadGamificationDataAsync();
+            await LoadGamificationDataAsync().ConfigureAwait(false);
         }
 
         return newAchievements;
