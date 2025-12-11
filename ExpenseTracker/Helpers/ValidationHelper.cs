@@ -62,7 +62,7 @@ public static class ValidationHelper
     }
 
     /// <summary>
-    /// Validates an email address format
+    /// Validates an email address format using a more robust pattern
     /// </summary>
     /// <param name="email">The email to validate</param>
     /// <param name="errorMessage">Output parameter for the error message</param>
@@ -75,7 +75,9 @@ public static class ValidationHelper
             return false;
         }
 
-        if (!email.Contains('@') || !email.Contains('.'))
+        // More robust email validation pattern
+        var emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+        if (!System.Text.RegularExpressions.Regex.IsMatch(email, emailPattern))
         {
             errorMessage = "Please enter a valid email address.";
             return false;

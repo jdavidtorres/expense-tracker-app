@@ -96,19 +96,17 @@ public partial class GamificationViewModel : BaseViewModel
     /// </summary>
     /// <param name="monthlyBudget">Monthly budget limit</param>
     /// <param name="currentSpending">Current spending amount</param>
-    public async Task UpdateBudgetStatusAsync(decimal monthlyBudget, decimal currentSpending)
+    public void UpdateBudgetStatus(decimal monthlyBudget, decimal currentSpending)
     {
         BudgetStatus = _gamificationService.CalculateBudgetStatus(monthlyBudget, currentSpending);
-        await Task.CompletedTask;
     }
 
     /// <summary>
     /// Updates the budget goal progress tracker
     /// </summary>
-    public async Task UpdateBudgetGoalProgressAsync(decimal income, decimal essentials, decimal savings, decimal discretionary)
+    public void UpdateBudgetGoalProgress(decimal income, decimal essentials, decimal savings, decimal discretionary)
     {
         BudgetGoalTracker = _gamificationService.CalculateBudgetGoalProgress(income, essentials, savings, discretionary);
-        await Task.CompletedTask;
     }
 
     /// <summary>
