@@ -1,10 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
-using ExpenseTracker.Services;
-using ExpenseTracker.ViewModels;
-using ExpenseTracker.Views;
+using ExpenseTracker.Extensions;
 
 namespace ExpenseTracker
 {
+	/// <summary>
+	/// Main program entry point for MAUI application
+	/// </summary>
 	public static class MauiProgram
 	{
 		public static MauiApp CreateMauiApp()
@@ -18,37 +19,17 @@ namespace ExpenseTracker
 					fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 				});
 
-			// Configure HttpClient for API calls
-			builder.Services.AddHttpClient<ExpenseService>(client =>
-			{
-				client.BaseAddress = new Uri("http://localhost:8083/api/");
-				client.Timeout = TimeSpan.FromSeconds(30);
-			});
-
-			// Register pages
-			builder.Services.AddTransient<DashboardPage>();
-			builder.Services.AddTransient<GamificationPage>();
-			builder.Services.AddTransient<SubscriptionsPage>();
-			builder.Services.AddTransient<InvoicesPage>();
-			builder.Services.AddTransient<SubscriptionFormPage>();
-			builder.Services.AddTransient<InvoiceFormPage>();
-
-			// Register ViewModels
-			builder.Services.AddTransient<DashboardViewModel>();
-			builder.Services.AddTransient<GamificationViewModel>();
-			builder.Services.AddTransient<SubscriptionsViewModel>();
-			builder.Services.AddTransient<InvoicesViewModel>();
-			builder.Services.AddTransient<SubscriptionFormViewModel>();
-			builder.Services.AddTransient<InvoiceFormViewModel>();
-
-			// Register services
-			builder.Services.AddSingleton<GamificationService>();
-			builder.Services.AddTransient<ExpenseService>();
+			// Register application services, ViewModels, and Views using extension methods
+			builder.Services
+				.AddAppServices()
+				.AddViewModels()
+				.AddViews();
 
 #if DEBUG
 			builder.Logging.AddDebug();
 #endif
 
 			return builder.Build();
-		}	}
+		}
+	}
 }

@@ -6,6 +6,9 @@ using ExpenseTracker.Services;
 
 namespace ExpenseTracker.ViewModels;
 
+/// <summary>
+/// ViewModel for managing invoices display and operations
+/// </summary>
 public partial class InvoicesViewModel : BaseViewModel
 {
     private readonly ExpenseService _expenseService;
@@ -24,7 +27,7 @@ public partial class InvoicesViewModel : BaseViewModel
 
     public InvoicesViewModel(ExpenseService expenseService)
     {
-        _expenseService = expenseService;
+        _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
     }
 
     [RelayCommand]
@@ -33,19 +36,15 @@ public partial class InvoicesViewModel : BaseViewModel
         try
         {
             IsLoading = true;
-            ErrorMessage = null;
+            ClearError();
 
-            var allInvoices = await _expenseService.GetInvoicesAsync();
+            var allInvoices = await _expenseService.GetInvoicesAsync().ConfigureAwait(false);
 
-            if (ShowAllStatuses)
-            {
-                Invoices = new ObservableCollection<Invoice>(allInvoices);
-            }
-            else
-            {
-                var filteredInvoices = allInvoices.Where(i => i.Status == FilterStatus);
-                Invoices = new ObservableCollection<Invoice>(filteredInvoices);
-            }
+            var invoicesList = ShowAllStatuses 
+                ? allInvoices 
+                : allInvoices.Where(i => i.Status == FilterStatus).ToList();
+            
+            Invoices = new ObservableCollection<Invoice>(invoicesList);
         }
         catch (Exception ex)
         {
@@ -58,26 +57,15 @@ public partial class InvoicesViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private async Task DeleteInvoiceByIdAsync(string id)
+    private async Task DeleteInvoiceAsync(string id)
     {
-        try
-        {
-            await _expenseService.DeleteInvoiceAsync(id);
-            await LoadInvoicesAsync();
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = $"Failed to delete invoice: {ex.Message}";
-        }
-    }
+        if (string.IsNullOrWhiteSpace(id))
+            return;
 
-    [RelayCommand]
-    private async Task DeleteInvoiceAsync(Invoice invoice)
-    {
         try
         {
-            await _expenseService.DeleteInvoiceAsync(invoice.Id);
-            await LoadInvoicesAsync();
+            await _expenseService.DeleteInvoiceAsync(id).ConfigureAwait(false);
+            await LoadInvoicesAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -88,12 +76,15 @@ public partial class InvoicesViewModel : BaseViewModel
     [RelayCommand]
     private async Task MarkAsPaidAsync(Invoice invoice)
     {
+        if (invoice == null)
+            return;
+
         try
         {
             // Update invoice status to paid
             invoice.Status = InvoiceStatus.Paid;
-            await _expenseService.UpdateInvoiceAsync(invoice);
-            await LoadInvoicesAsync();
+            await _expenseService.UpdateInvoiceAsync(invoice).ConfigureAwait(false);
+            await LoadInvoicesAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -102,27 +93,24 @@ public partial class InvoicesViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private async Task EditInvoiceAsync(Invoice invoice)
-    {
-        await Shell.Current.GoToAsync($"edit-invoice?id={invoice.Id}");
-    }
-
-    [RelayCommand]
     private async Task NavigateToAddInvoiceAsync()
     {
-        await Shell.Current.GoToAsync("add-invoice");
+        await Shell.Current.GoToAsync("add-invoice").ConfigureAwait(false);
     }
 
     [RelayCommand]
     private async Task NavigateToEditInvoiceAsync(Invoice invoice)
     {
-        await Shell.Current.GoToAsync($"edit-invoice?id={invoice.Id}");
+        if (invoice == null)
+            return;
+
+        await Shell.Current.GoToAsync($"edit-invoice?id={invoice.Id}").ConfigureAwait(false);
     }
 
     [RelayCommand]
     private async Task RefreshAsync()
     {
-        await LoadInvoicesAsync();
+        await LoadInvoicesAsync().ConfigureAwait(false);
     }
 
     partial void OnFilterStatusChanged(InvoiceStatus value)
