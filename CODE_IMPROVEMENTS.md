@@ -6,6 +6,15 @@ This document summarizes all the code improvements made to the Expense Tracker a
 
 The improvements focused on enhancing code quality, maintainability, performance, and best practices across the entire .NET MAUI application. All changes maintain backward compatibility while significantly improving the codebase.
 
+## Important Note on ConfigureAwait
+
+**ConfigureAwait(false) Usage**: After code review, `ConfigureAwait(false)` has been **removed from all ViewModel code**. In .NET MAUI applications:
+- ViewModels must execute on the UI thread to update ObservableCollections and UI-bound properties
+- Shell navigation requires the UI synchronization context
+- `ConfigureAwait(false)` is only appropriate in service layer code where no UI interaction occurs
+
+This is a critical distinction for MAUI applications and follows Microsoft's best practices for UI frameworks.
+
 ## Categories of Improvements
 
 ### 1. Code Quality & Maintainability
@@ -50,16 +59,16 @@ Benefits:
 - **Impact**: Reduces memory allocations and GC pressure
 - **Benefit**: Faster JSON serialization/deserialization
 
-#### ConfigureAwait(false)
-- Added `.ConfigureAwait(false)` to all async calls in library code
-- **Impact**: Prevents unnecessary context switching
-- **Benefit**: Better performance, especially on mobile devices
-- **Note**: Not added to UI code where synchronization context is needed
+#### ConfigureAwait Usage
+- Added `ConfigureAwait(false)` to all async calls in **service layer code only**
+- **Removed from ViewModels** after code review - ViewModels require UI thread context
+- **Impact**: Better performance in services, proper UI thread synchronization in ViewModels
+- **Benefit**: Follows .NET MAUI best practices for async operations
 
 #### LINQ Optimization
-- Changed to use single enumeration patterns
-- Avoided multiple `.Where()` chains where possible
-- Used conditional expressions for cleaner code
+- Removed unnecessary `.ToList()` call in InvoicesViewModel
+- Pass IEnumerable directly to ObservableCollection constructor
+- Avoided multiple enumerations
 
 ### 3. Best Practices & Standards
 
@@ -91,7 +100,6 @@ Benefits:
 - Added `ArgumentNullException` checks in all service and ViewModel constructors
 - Added `ArgumentException` for invalid string parameters (empty/whitespace)
 - Added `ArgumentOutOfRangeException` for month validation
-- Created `ValidationHelper` class with reusable validation methods
 
 #### Validation Refactoring
 - Extracted validation logic into separate methods in form ViewModels
@@ -127,8 +135,6 @@ ExpenseTracker/
 ├── Converters/          # Value converters
 ├── Extensions/          # NEW - Extension methods
 │   └── ServiceCollectionExtensions.cs
-├── Helpers/            # NEW - Helper utilities
-│   └── ValidationHelper.cs
 ├── Models/             # Data models
 ├── Services/           # Business logic services
 ├── ViewModels/         # MVVM ViewModels
@@ -151,11 +157,10 @@ Added regions to large files for better organization:
 
 ## Files Modified
 
-### New Files (4)
+### New Files (3)
 1. `ExpenseTracker/Constants/ApiEndpoints.cs`
 2. `ExpenseTracker/Constants/GamificationConstants.cs`
 3. `ExpenseTracker/Extensions/ServiceCollectionExtensions.cs`
-4. `ExpenseTracker/Helpers/ValidationHelper.cs`
 
 ### Modified Files (16)
 1. `ExpenseTracker/Services/ExpenseService.cs`
