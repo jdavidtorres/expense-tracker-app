@@ -1,11 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ExpenseTracker.Constants;
 using ExpenseTracker.Models;
 using ExpenseTracker.Services;
 
 namespace ExpenseTracker.ViewModels;
 
+/// <summary>
+/// ViewModel for adding or editing a subscription
+/// </summary>
 [QueryProperty(nameof(Subscription), "subscription")]
 public partial class SubscriptionFormViewModel : BaseViewModel
 {
@@ -21,6 +25,9 @@ public partial class SubscriptionFormViewModel : BaseViewModel
     [ObservableProperty]
     private string formTitle = "Add Subscription";
 
+    /// <summary>
+    /// List of available billing cycles for selection
+    /// </summary>
     public List<BillingCycle> BillingCycles { get; } = Enum.GetValues<BillingCycle>().ToList();
 
     public SubscriptionFormViewModel(ExpenseService expenseService, GamificationService gamificationService)
@@ -43,6 +50,9 @@ public partial class SubscriptionFormViewModel : BaseViewModel
         }
     }
 
+    /// <summary>
+    /// Validates and saves the subscription
+    /// </summary>
     [RelayCommand]
     private async Task SaveAsync()
     {
@@ -51,16 +61,10 @@ public partial class SubscriptionFormViewModel : BaseViewModel
             IsLoading = true;
             ClearError();
 
-            // Basic validation
-            if (string.IsNullOrWhiteSpace(Subscription.Name))
+            // Validate subscription data
+            if (!ValidateSubscription(out var validationError))
             {
-                ErrorMessage = "Subscription name is required.";
-                return;
-            }
-
-            if (Subscription.Amount <= 0)
-            {
-                ErrorMessage = "Amount must be greater than 0.";
+                ErrorMessage = validationError;
                 return;
             }
 
@@ -79,21 +83,14 @@ public partial class SubscriptionFormViewModel : BaseViewModel
                 var newAchievements = await _gamificationService.RecordExpenseTrackedAsync();
                 
                 // Show achievement notification if any were unlocked
-                if (newAchievements.Any())
-                {
-                    var achievement = newAchievements.First();
-                    await Application.Current!.MainPage!.DisplayAlert(
-                        "🎉 Achievement Unlocked!",
-                        $"{achievement.Icon} {achievement.Name}\n{achievement.Description}\n+{achievement.PointsReward} Points!",
-                        "Awesome!");
-                }
+                await ShowAchievementNotificationAsync(newAchievements);
             }
 
-            await Shell.Current.GoToAsync("..");
+            await Shell.Current.GoToAsync(NavigationRoutes.NavigateBack);
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to save subscription: {ex.Message}";
+            ErrorMessage = string.Format(ErrorMessages.SaveFailed, "subscription", ex.Message);
         }
         finally
         {
@@ -101,9 +98,54 @@ public partial class SubscriptionFormViewModel : BaseViewModel
         }
     }
 
+    /// <summary>
+    /// Validates subscription data
+    /// </summary>
+    private bool ValidateSubscription(out string? errorMessage)
+    {
+        if (string.IsNullOrWhiteSpace(Subscription.Name))
+        {
+            errorMessage = ErrorMessages.NameRequired;
+            return false;
+        }
+
+        if (Subscription.Amount <= 0)
+        {
+            errorMessage = ErrorMessages.AmountMustBeGreaterThanZero;
+            return false;
+        }
+
+        if (Subscription.NextBillingDate < DateTime.Today)
+        {
+            errorMessage = ErrorMessages.BillingDateCannotBeInPast;
+            return false;
+        }
+
+        errorMessage = null;
+        return true;
+    }
+
+    /// <summary>
+    /// Shows achievement notification if any achievements were unlocked
+    /// </summary>
+    private async Task ShowAchievementNotificationAsync(List<Achievement> newAchievements)
+    {
+        if (newAchievements.Any() && Application.Current?.MainPage != null)
+        {
+            var achievement = newAchievements.First();
+            await Application.Current.MainPage.DisplayAlert(
+                "🎉 Achievement Unlocked!",
+                $"{achievement.Icon} {achievement.Name}\n{achievement.Description}\n+{achievement.PointsReward} Points!",
+                "Awesome!");
+        }
+    }
+
+    /// <summary>
+    /// Cancels the form and navigates back
+    /// </summary>
     [RelayCommand]
     private async Task CancelAsync()
     {
-        await Shell.Current.GoToAsync("..");
+        await Shell.Current.GoToAsync(NavigationRoutes.NavigateBack);
     }
 }

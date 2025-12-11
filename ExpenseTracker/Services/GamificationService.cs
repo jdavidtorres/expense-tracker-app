@@ -1,3 +1,4 @@
+using ExpenseTracker.Constants;
 using ExpenseTracker.Models;
 using System.Text.Json;
 
@@ -8,9 +9,9 @@ namespace ExpenseTracker.Services;
 /// </summary>
 public class GamificationService
 {
-    private const string StorageKey = "gamification_profile";
     private GamificationProfile? _profile;
     private readonly List<Achievement> _allAchievements;
+    private readonly SemaphoreSlim _profileLock = new(1, 1);
 
     public GamificationService()
     {
@@ -25,21 +26,33 @@ public class GamificationService
         if (_profile != null)
             return _profile;
 
+        await _profileLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            var json = await SecureStorage.GetAsync(StorageKey);
-            if (!string.IsNullOrEmpty(json))
-            {
-                _profile = JsonSerializer.Deserialize<GamificationProfile>(json);
-            }
-        }
-        catch (Exception)
-        {
-            // If loading fails, create new profile
-        }
+            // Double-check pattern
+            if (_profile != null)
+                return _profile;
 
-        _profile ??= new GamificationProfile();
-        return _profile;
+            try
+            {
+                var json = await SecureStorage.GetAsync(StorageKeys.GamificationProfile).ConfigureAwait(false);
+                if (!string.IsNullOrEmpty(json))
+                {
+                    _profile = JsonSerializer.Deserialize<GamificationProfile>(json);
+                }
+            }
+            catch (Exception)
+            {
+                // If loading fails, create new profile
+            }
+
+            _profile ??= new GamificationProfile();
+            return _profile;
+        }
+        finally
+        {
+            _profileLock.Release();
+        }
     }
 
     /// <summary>
@@ -50,14 +63,19 @@ public class GamificationService
         if (_profile == null)
             return;
 
+        await _profileLock.WaitAsync().ConfigureAwait(false);
         try
         {
             var json = JsonSerializer.Serialize(_profile);
-            await SecureStorage.SetAsync(StorageKey, json);
+            await SecureStorage.SetAsync(StorageKeys.GamificationProfile, json).ConfigureAwait(false);
         }
         catch (Exception)
         {
             // Handle storage errors gracefully
+        }
+        finally
+        {
+            _profileLock.Release();
         }
     }
 
@@ -66,7 +84,7 @@ public class GamificationService
     /// </summary>
     public async Task<(bool leveledUp, int newLevel)> AwardPointsAsync(int points)
     {
-        var profile = await GetProfileAsync();
+        var profile = await GetProfileAsync().ConfigureAwait(false);
         var oldLevel = profile.Level;
         
         profile.ExperiencePoints += points;
@@ -79,7 +97,7 @@ public class GamificationService
             profile.Level++;
         }
 
-        await SaveProfileAsync();
+        await SaveProfileAsync().ConfigureAwait(false);
 
         var leveledUp = profile.Level > oldLevel;
         return (leveledUp, profile.Level);
@@ -90,20 +108,20 @@ public class GamificationService
     /// </summary>
     public async Task<List<Achievement>> RecordExpenseTrackedAsync()
     {
-        var profile = await GetProfileAsync();
+        var profile = await GetProfileAsync().ConfigureAwait(false);
         profile.TotalExpensesTracked++;
         profile.LastActivityDate = DateTime.UtcNow;
 
         // Update streak
-        await UpdateStreakAsync();
+        await UpdateStreakAsync().ConfigureAwait(false);
 
         // Award points
-        await AwardPointsAsync(PointAction.AddExpense);
+        await AwardPointsAsync(PointAction.AddExpense).ConfigureAwait(false);
 
         // Check and unlock achievements
-        var newAchievements = await CheckAchievementsAsync();
+        var newAchievements = await CheckAchievementsAsync().ConfigureAwait(false);
 
-        await SaveProfileAsync();
+        await SaveProfileAsync().ConfigureAwait(false);
         return newAchievements;
     }
 
@@ -112,7 +130,7 @@ public class GamificationService
     /// </summary>
     private async Task UpdateStreakAsync()
     {
-        var profile = await GetProfileAsync();
+        var profile = await GetProfileAsync().ConfigureAwait(false);
         var today = DateTime.UtcNow.Date;
         var lastActivity = profile.LastActivityDate.Date;
 
@@ -137,13 +155,13 @@ public class GamificationService
             // Weekly bonus (every 7 days)
             if (profile.CurrentStreak % 7 == 0 && profile.LastWeeklyBonusDay != profile.CurrentStreak)
             {
-                await AwardPointsAsync(PointAction.WeeklyStreak);
+                await AwardPointsAsync(PointAction.WeeklyStreak).ConfigureAwait(false);
                 profile.LastWeeklyBonusDay = profile.CurrentStreak;
             }
             // Monthly bonus (every 30 days)
             if (profile.CurrentStreak % 30 == 0 && profile.LastMonthlyBonusDay != profile.CurrentStreak)
             {
-                await AwardPointsAsync(PointAction.MonthlyStreak);
+                await AwardPointsAsync(PointAction.MonthlyStreak).ConfigureAwait(false);
                 profile.LastMonthlyBonusDay = profile.CurrentStreak;
             }
         }
@@ -163,7 +181,7 @@ public class GamificationService
     /// </summary>
     private async Task<List<Achievement>> CheckAchievementsAsync()
     {
-        var profile = await GetProfileAsync();
+        var profile = await GetProfileAsync().ConfigureAwait(false);
         var newlyUnlocked = new List<Achievement>();
 
         var lockedAchievements = _allAchievements.Where(a => !profile.UnlockedAchievements.Contains(a.Id));
@@ -172,18 +190,18 @@ public class GamificationService
         {
             var shouldUnlock = achievement.Id switch
             {
-                "first_expense" => profile.TotalExpensesTracked >= 1,
-                "expense_novice" => profile.TotalExpensesTracked >= 10,
-                "expense_tracker" => profile.TotalExpensesTracked >= 50,
-                "expense_master" => profile.TotalExpensesTracked >= 100,
-                "week_streak" => profile.CurrentStreak >= 7,
-                "month_streak" => profile.CurrentStreak >= 30,
-                "streak_legend" => profile.LongestStreak >= 100,
-                "level_5" => profile.Level >= 5,
-                "level_10" => profile.Level >= 10,
-                "level_25" => profile.Level >= 25,
-                "point_collector" => profile.TotalPoints >= 1000,
-                "point_hoarder" => profile.TotalPoints >= 5000,
+                AchievementIds.FirstExpense => profile.TotalExpensesTracked >= 1,
+                AchievementIds.ExpenseNovice => profile.TotalExpensesTracked >= 10,
+                AchievementIds.ExpenseTracker => profile.TotalExpensesTracked >= 50,
+                AchievementIds.ExpenseMaster => profile.TotalExpensesTracked >= 100,
+                AchievementIds.WeekStreak => profile.CurrentStreak >= 7,
+                AchievementIds.MonthStreak => profile.CurrentStreak >= 30,
+                AchievementIds.StreakLegend => profile.LongestStreak >= 100,
+                AchievementIds.Level5 => profile.Level >= 5,
+                AchievementIds.Level10 => profile.Level >= 10,
+                AchievementIds.Level25 => profile.Level >= 25,
+                AchievementIds.PointCollector => profile.TotalPoints >= 1000,
+                AchievementIds.PointHoarder => profile.TotalPoints >= 5000,
                 _ => false
             };
 
@@ -215,7 +233,7 @@ public class GamificationService
     /// </summary>
     public async Task<List<Achievement>> GetAchievementsAsync()
     {
-        var profile = await GetProfileAsync();
+        var profile = await GetProfileAsync().ConfigureAwait(false);
         
         foreach (var achievement in _allAchievements)
         {
@@ -261,7 +279,7 @@ public class GamificationService
             // First steps
             new Achievement
             {
-                Id = "first_expense",
+                Id = AchievementIds.FirstExpense,
                 Name = "First Step",
                 Description = "Track your first expense",
                 Icon = "🎯",
@@ -270,7 +288,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "expense_novice",
+                Id = AchievementIds.ExpenseNovice,
                 Name = "Expense Novice",
                 Description = "Track 10 expenses",
                 Icon = "📝",
@@ -279,7 +297,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "expense_tracker",
+                Id = AchievementIds.ExpenseTracker,
                 Name = "Expense Tracker",
                 Description = "Track 50 expenses",
                 Icon = "📊",
@@ -288,7 +306,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "expense_master",
+                Id = AchievementIds.ExpenseMaster,
                 Name = "Expense Master",
                 Description = "Track 100 expenses",
                 Icon = "👑",
@@ -299,7 +317,7 @@ public class GamificationService
             // Streaks
             new Achievement
             {
-                Id = "week_streak",
+                Id = AchievementIds.WeekStreak,
                 Name = "Week Warrior",
                 Description = "Track expenses for 7 days in a row",
                 Icon = "🔥",
@@ -308,7 +326,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "month_streak",
+                Id = AchievementIds.MonthStreak,
                 Name = "Monthly Master",
                 Description = "Track expenses for 30 days in a row",
                 Icon = "⭐",
@@ -317,7 +335,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "streak_legend",
+                Id = AchievementIds.StreakLegend,
                 Name = "Streak Legend",
                 Description = "Achieve a 100-day streak",
                 Icon = "🏆",
@@ -328,7 +346,7 @@ public class GamificationService
             // Levels
             new Achievement
             {
-                Id = "level_5",
+                Id = AchievementIds.Level5,
                 Name = "Rising Star",
                 Description = "Reach level 5",
                 Icon = "⭐",
@@ -337,7 +355,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "level_10",
+                Id = AchievementIds.Level10,
                 Name = "Skilled Tracker",
                 Description = "Reach level 10",
                 Icon = "🌟",
@@ -346,7 +364,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "level_25",
+                Id = AchievementIds.Level25,
                 Name = "Finance Guru",
                 Description = "Reach level 25",
                 Icon = "💎",
@@ -357,7 +375,7 @@ public class GamificationService
             // Points
             new Achievement
             {
-                Id = "point_collector",
+                Id = AchievementIds.PointCollector,
                 Name = "Point Collector",
                 Description = "Earn 1000 total points",
                 Icon = "💰",
@@ -366,7 +384,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "point_hoarder",
+                Id = AchievementIds.PointHoarder,
                 Name = "Point Hoarder",
                 Description = "Earn 5000 total points",
                 Icon = "💎",
@@ -382,7 +400,7 @@ public class GamificationService
     public async Task ResetProfileAsync()
     {
         _profile = new GamificationProfile();
-        await SaveProfileAsync();
+        await SaveProfileAsync().ConfigureAwait(false);
     }
 
     /// <summary>
@@ -390,7 +408,7 @@ public class GamificationService
     /// </summary>
     public async Task<string> GetMotivationalMessageAsync()
     {
-        var profile = await GetProfileAsync();
+        var profile = await GetProfileAsync().ConfigureAwait(false);
 
         var messages = new List<string>();
 
