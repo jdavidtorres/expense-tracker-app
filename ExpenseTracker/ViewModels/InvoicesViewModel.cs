@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ExpenseTracker.Constants;
 using ExpenseTracker.Models;
 using ExpenseTracker.Services;
 
@@ -65,7 +66,7 @@ public partial class InvoicesViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to load invoices: {ex.Message}";
+            ErrorMessage = string.Format(ErrorMessages.LoadFailed, "invoices", ex.Message);
         }
         finally
         {
@@ -88,7 +89,7 @@ public partial class InvoicesViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to delete invoice: {ex.Message}";
+            ErrorMessage = string.Format(ErrorMessages.DeleteFailed, "invoice", ex.Message);
         }
     }
 
@@ -109,7 +110,7 @@ public partial class InvoicesViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to mark invoice as paid: {ex.Message}";
+            ErrorMessage = string.Format(ErrorMessages.UpdateFailed, "invoice", ex.Message);
         }
     }
 
@@ -120,7 +121,7 @@ public partial class InvoicesViewModel : BaseViewModel
     private async Task EditInvoiceAsync(Invoice invoice)
     {
         ArgumentNullException.ThrowIfNull(invoice);
-        await Shell.Current.GoToAsync($"edit-invoice?id={invoice.Id}");
+        await Shell.Current.GoToAsync($"{NavigationRoutes.EditInvoice}?id={invoice.Id}");
     }
 
     /// <summary>
@@ -129,7 +130,7 @@ public partial class InvoicesViewModel : BaseViewModel
     [RelayCommand]
     private async Task AddInvoiceAsync()
     {
-        await Shell.Current.GoToAsync("add-invoice");
+        await Shell.Current.GoToAsync(NavigationRoutes.AddInvoice);
     }
 
     /// <summary>

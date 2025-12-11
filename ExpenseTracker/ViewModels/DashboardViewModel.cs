@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ExpenseTracker.Constants;
 using ExpenseTracker.Models;
 using ExpenseTracker.Services;
 
@@ -84,7 +85,7 @@ public partial class DashboardViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to load dashboard data: {ex.Message}";
+            ErrorMessage = string.Format(ErrorMessages.LoadFailed, "dashboard data", ex.Message);
         }
         finally
         {
@@ -98,7 +99,7 @@ public partial class DashboardViewModel : BaseViewModel
     [RelayCommand]
     private async Task NavigateToSubscriptionsAsync()
     {
-        await Shell.Current.GoToAsync("subscriptions");
+        await Shell.Current.GoToAsync(NavigationRoutes.Subscriptions);
     }
 
     /// <summary>
@@ -107,7 +108,7 @@ public partial class DashboardViewModel : BaseViewModel
     [RelayCommand]
     private async Task NavigateToInvoicesAsync()
     {
-        await Shell.Current.GoToAsync("invoices");
+        await Shell.Current.GoToAsync(NavigationRoutes.Invoices);
     }
 
     /// <summary>
@@ -125,6 +126,6 @@ public partial class DashboardViewModel : BaseViewModel
     [RelayCommand]
     private async Task NavigateToGamificationAsync()
     {
-        await Shell.Current.GoToAsync("gamification");
+        await Shell.Current.GoToAsync(NavigationRoutes.Gamification);
     }
 }

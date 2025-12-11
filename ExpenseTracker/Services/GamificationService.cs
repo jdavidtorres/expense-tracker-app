@@ -1,3 +1,4 @@
+using ExpenseTracker.Constants;
 using ExpenseTracker.Models;
 using System.Text.Json;
 
@@ -8,7 +9,6 @@ namespace ExpenseTracker.Services;
 /// </summary>
 public class GamificationService
 {
-    private const string StorageKey = "gamification_profile";
     private GamificationProfile? _profile;
     private readonly List<Achievement> _allAchievements;
     private readonly SemaphoreSlim _profileLock = new(1, 1);
@@ -35,7 +35,7 @@ public class GamificationService
 
             try
             {
-                var json = await SecureStorage.GetAsync(StorageKey).ConfigureAwait(false);
+                var json = await SecureStorage.GetAsync(StorageKeys.GamificationProfile).ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(json))
                 {
                     _profile = JsonSerializer.Deserialize<GamificationProfile>(json);
@@ -67,7 +67,7 @@ public class GamificationService
         try
         {
             var json = JsonSerializer.Serialize(_profile);
-            await SecureStorage.SetAsync(StorageKey, json).ConfigureAwait(false);
+            await SecureStorage.SetAsync(StorageKeys.GamificationProfile, json).ConfigureAwait(false);
         }
         catch (Exception)
         {
@@ -190,18 +190,18 @@ public class GamificationService
         {
             var shouldUnlock = achievement.Id switch
             {
-                "first_expense" => profile.TotalExpensesTracked >= 1,
-                "expense_novice" => profile.TotalExpensesTracked >= 10,
-                "expense_tracker" => profile.TotalExpensesTracked >= 50,
-                "expense_master" => profile.TotalExpensesTracked >= 100,
-                "week_streak" => profile.CurrentStreak >= 7,
-                "month_streak" => profile.CurrentStreak >= 30,
-                "streak_legend" => profile.LongestStreak >= 100,
-                "level_5" => profile.Level >= 5,
-                "level_10" => profile.Level >= 10,
-                "level_25" => profile.Level >= 25,
-                "point_collector" => profile.TotalPoints >= 1000,
-                "point_hoarder" => profile.TotalPoints >= 5000,
+                AchievementIds.FirstExpense => profile.TotalExpensesTracked >= 1,
+                AchievementIds.ExpenseNovice => profile.TotalExpensesTracked >= 10,
+                AchievementIds.ExpenseTracker => profile.TotalExpensesTracked >= 50,
+                AchievementIds.ExpenseMaster => profile.TotalExpensesTracked >= 100,
+                AchievementIds.WeekStreak => profile.CurrentStreak >= 7,
+                AchievementIds.MonthStreak => profile.CurrentStreak >= 30,
+                AchievementIds.StreakLegend => profile.LongestStreak >= 100,
+                AchievementIds.Level5 => profile.Level >= 5,
+                AchievementIds.Level10 => profile.Level >= 10,
+                AchievementIds.Level25 => profile.Level >= 25,
+                AchievementIds.PointCollector => profile.TotalPoints >= 1000,
+                AchievementIds.PointHoarder => profile.TotalPoints >= 5000,
                 _ => false
             };
 
@@ -279,7 +279,7 @@ public class GamificationService
             // First steps
             new Achievement
             {
-                Id = "first_expense",
+                Id = AchievementIds.FirstExpense,
                 Name = "First Step",
                 Description = "Track your first expense",
                 Icon = "🎯",
@@ -288,7 +288,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "expense_novice",
+                Id = AchievementIds.ExpenseNovice,
                 Name = "Expense Novice",
                 Description = "Track 10 expenses",
                 Icon = "📝",
@@ -297,7 +297,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "expense_tracker",
+                Id = AchievementIds.ExpenseTracker,
                 Name = "Expense Tracker",
                 Description = "Track 50 expenses",
                 Icon = "📊",
@@ -306,7 +306,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "expense_master",
+                Id = AchievementIds.ExpenseMaster,
                 Name = "Expense Master",
                 Description = "Track 100 expenses",
                 Icon = "👑",
@@ -317,7 +317,7 @@ public class GamificationService
             // Streaks
             new Achievement
             {
-                Id = "week_streak",
+                Id = AchievementIds.WeekStreak,
                 Name = "Week Warrior",
                 Description = "Track expenses for 7 days in a row",
                 Icon = "🔥",
@@ -326,7 +326,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "month_streak",
+                Id = AchievementIds.MonthStreak,
                 Name = "Monthly Master",
                 Description = "Track expenses for 30 days in a row",
                 Icon = "⭐",
@@ -335,7 +335,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "streak_legend",
+                Id = AchievementIds.StreakLegend,
                 Name = "Streak Legend",
                 Description = "Achieve a 100-day streak",
                 Icon = "🏆",
@@ -346,7 +346,7 @@ public class GamificationService
             // Levels
             new Achievement
             {
-                Id = "level_5",
+                Id = AchievementIds.Level5,
                 Name = "Rising Star",
                 Description = "Reach level 5",
                 Icon = "⭐",
@@ -355,7 +355,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "level_10",
+                Id = AchievementIds.Level10,
                 Name = "Skilled Tracker",
                 Description = "Reach level 10",
                 Icon = "🌟",
@@ -364,7 +364,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "level_25",
+                Id = AchievementIds.Level25,
                 Name = "Finance Guru",
                 Description = "Reach level 25",
                 Icon = "💎",
@@ -375,7 +375,7 @@ public class GamificationService
             // Points
             new Achievement
             {
-                Id = "point_collector",
+                Id = AchievementIds.PointCollector,
                 Name = "Point Collector",
                 Description = "Earn 1000 total points",
                 Icon = "💰",
@@ -384,7 +384,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = "point_hoarder",
+                Id = AchievementIds.PointHoarder,
                 Name = "Point Hoarder",
                 Description = "Earn 5000 total points",
                 Icon = "💎",

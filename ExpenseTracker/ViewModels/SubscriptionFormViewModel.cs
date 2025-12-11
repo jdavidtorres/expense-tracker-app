@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ExpenseTracker.Constants;
 using ExpenseTracker.Models;
 using ExpenseTracker.Services;
 
@@ -85,11 +86,11 @@ public partial class SubscriptionFormViewModel : BaseViewModel
                 await ShowAchievementNotificationAsync(newAchievements);
             }
 
-            await Shell.Current.GoToAsync("..");
+            await Shell.Current.GoToAsync(NavigationRoutes.NavigateBack);
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to save subscription: {ex.Message}";
+            ErrorMessage = string.Format(ErrorMessages.SaveFailed, "subscription", ex.Message);
         }
         finally
         {
@@ -104,19 +105,19 @@ public partial class SubscriptionFormViewModel : BaseViewModel
     {
         if (string.IsNullOrWhiteSpace(Subscription.Name))
         {
-            errorMessage = "Subscription name is required.";
+            errorMessage = ErrorMessages.NameRequired;
             return false;
         }
 
         if (Subscription.Amount <= 0)
         {
-            errorMessage = "Amount must be greater than 0.";
+            errorMessage = ErrorMessages.AmountMustBeGreaterThanZero;
             return false;
         }
 
         if (Subscription.NextBillingDate < DateTime.Today)
         {
-            errorMessage = "Next billing date cannot be in the past.";
+            errorMessage = ErrorMessages.BillingDateCannotBeInPast;
             return false;
         }
 
@@ -145,6 +146,6 @@ public partial class SubscriptionFormViewModel : BaseViewModel
     [RelayCommand]
     private async Task CancelAsync()
     {
-        await Shell.Current.GoToAsync("..");
+        await Shell.Current.GoToAsync(NavigationRoutes.NavigateBack);
     }
 }

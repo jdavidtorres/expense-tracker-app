@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ExpenseTracker.Constants;
 using ExpenseTracker.Models;
 using ExpenseTracker.Services;
 
@@ -40,7 +41,7 @@ public partial class SubscriptionsViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to load subscriptions: {ex.Message}";
+            ErrorMessage = string.Format(ErrorMessages.LoadFailed, "subscriptions", ex.Message);
         }
         finally
         {
@@ -63,7 +64,7 @@ public partial class SubscriptionsViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to delete subscription: {ex.Message}";
+            ErrorMessage = string.Format(ErrorMessages.DeleteFailed, "subscription", ex.Message);
         }
     }
 
@@ -73,7 +74,7 @@ public partial class SubscriptionsViewModel : BaseViewModel
     [RelayCommand]
     private async Task AddSubscriptionAsync()
     {
-        await Shell.Current.GoToAsync("add-subscription");
+        await Shell.Current.GoToAsync(NavigationRoutes.AddSubscription);
     }
 
     /// <summary>
@@ -83,7 +84,7 @@ public partial class SubscriptionsViewModel : BaseViewModel
     private async Task EditSubscriptionAsync(Subscription subscription)
     {
         ArgumentNullException.ThrowIfNull(subscription);
-        await Shell.Current.GoToAsync($"edit-subscription?id={subscription.Id}");
+        await Shell.Current.GoToAsync($"{NavigationRoutes.EditSubscription}?id={subscription.Id}");
     }
 
     /// <summary>
@@ -112,7 +113,7 @@ public partial class SubscriptionsViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to toggle subscription status: {ex.Message}";
+            ErrorMessage = string.Format(ErrorMessages.UpdateFailed, "subscription status", ex.Message);
         }
     }
 }
