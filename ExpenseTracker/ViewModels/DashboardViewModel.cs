@@ -32,6 +32,15 @@ public partial class DashboardViewModel : BaseViewModel
     [ObservableProperty]
     private string motivationalMessage = string.Empty;
 
+    [ObservableProperty]
+    private string budgetHealthMessage = string.Empty;
+
+    [ObservableProperty]
+    private Color budgetHealthColor = Colors.Gray;
+
+    [ObservableProperty]
+    private bool isLevelUp;
+
     public DashboardViewModel(ExpenseService expenseService, GamificationService gamificationService)
     {
         _expenseService = expenseService;
@@ -52,6 +61,16 @@ public partial class DashboardViewModel : BaseViewModel
 
             // Load monthly summary
             CurrentMonthSummary = await _expenseService.GetMonthlySummaryAsync(DateTime.Now.Year, DateTime.Now.Month);
+
+            // Calculate budget health
+            if (CurrentMonthSummary != null)
+            {
+                // Assuming a fixed budget for now, or fetch from settings if available
+                decimal monthlyBudget = 2000m; // TODO: make configurable
+                var budgetStatus = _gamificationService.CalculateBudgetStatus(monthlyBudget, CurrentMonthSummary.TotalExpenses);
+                BudgetHealthMessage = budgetStatus.StatusMessage;
+                BudgetHealthColor = Color.FromArgb(budgetStatus.StatusColor);
+            }
 
             // Load yearly summary
             CurrentYearSummary = await _expenseService.GetYearlySummaryAsync(DateTime.Now.Year);
@@ -100,5 +119,17 @@ public partial class DashboardViewModel : BaseViewModel
     private async Task NavigateToGamificationAsync()
     {
         await Shell.Current.GoToAsync("gamification");
+    }
+
+    // Helper to trigger confetti from service (subscribe to events in a real app)
+    public void TriggerLevelUp()
+    {
+        IsLevelUp = true;
+        // Reset after delay handled by view
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            await Task.Delay(3000);
+            IsLevelUp = false;
+        });
     }
 }

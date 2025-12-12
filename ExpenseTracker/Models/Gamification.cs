@@ -160,12 +160,12 @@ public class BudgetStatus
         {
             return HealthLevel switch
             {
-                BudgetHealthLevel.Excellent => "Amazing! You're doing great! 🎉",
-                BudgetHealthLevel.Good => "Good job! Keep it up! 👍",
-                BudgetHealthLevel.Warning => "Watch your spending! ⚠️",
-                BudgetHealthLevel.Critical => "Almost at your limit! 🚨",
-                BudgetHealthLevel.OverBudget => "Over budget! Time to review! ❌",
-                _ => "Set a budget to track progress"
+                BudgetHealthLevel.Excellent => "🛡️ PERFECT DEFENSE! BUDGET UNTOUCHED!",
+                BudgetHealthLevel.Good => "⚔️ HOLDING THE LINE! KEEP IT UP!",
+                BudgetHealthLevel.Warning => "⚠️ SHIELDS FAILING! WATCH YOUR SPENDING!",
+                BudgetHealthLevel.Critical => "🚨 CRITICAL HIT! BUDGET NEARLY DEPLETED!",
+                BudgetHealthLevel.OverBudget => "💀 GAME OVER... FOR THIS BUDGET! RETRY NEXT MONTH!",
+                _ => "⚔️ START YOUR QUEST: SET A BUDGET!"
             };
         }
     }
@@ -222,23 +222,23 @@ public class BudgetGoalTracker
             var messages = new List<string>();
 
             if (SavingsProgress >= 100)
-                messages.Add("🎯 Savings goal achieved!");
+                messages.Add("� TREASURE CHEST SECURED! SAVINGS GOAL MET!");
             else if (SavingsProgress >= 75)
-                messages.Add($"💰 You're on the way! {SavingsProgress:F0}% toward savings goal");
+                messages.Add($"� SO CLOSE TO THE LOOT! {SavingsProgress:F0}% SAVED!");
             else if (SavingsProgress >= 50)
-                messages.Add($"📈 Good progress: {SavingsProgress:F0}% toward savings goal");
+                messages.Add($"⚔️ HALFWAY TO GLORY! {SavingsProgress:F0}% SAVED!");
             else
-                messages.Add($"💪 Keep going: {SavingsProgress:F0}% toward savings goal");
+                messages.Add($"�️ BUILD YOUR DEFENSES! {SavingsProgress:F0}% SAVED");
 
             if (EssentialsProgress > 100)
-                messages.Add("⚠️ Essentials spending over target");
+                messages.Add("⚠️ MANA LOW! ESSENTIALS OVERLOAD!");
             else if (EssentialsProgress > 90)
-                messages.Add("🔶 Essentials approaching limit");
+                messages.Add("� BOSS FIGHT IMMINENT! ESSENTIALS LIMIT NEAR!");
 
             if (DiscretionaryProgress > 100)
-                messages.Add("⚠️ Discretionary spending over target");
+                messages.Add("💣 DAMAGE TAKEN! DISCRETIONARY OVERLOAD!");
 
-            return messages.Count > 0 ? string.Join(" • ", messages) : "✅ On track with your budget!";
+            return messages.Count > 0 ? string.Join(" • ", messages) : "✅ QUEST ON TRACK!";
         }
     }
 }

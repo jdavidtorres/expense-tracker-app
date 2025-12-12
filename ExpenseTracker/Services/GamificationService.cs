@@ -386,7 +386,7 @@ public class GamificationService
     }
 
     /// <summary>
-    /// Get motivational message based on user's progress (focused on productivity, not gaming)
+    /// Get motivational message based on user's progress (focused on fun and gaming!)
     /// </summary>
     public async Task<string> GetMotivationalMessageAsync()
     {
@@ -396,23 +396,27 @@ public class GamificationService
 
         if (profile.CurrentStreak > 0)
         {
-            messages.Add($"✅ {profile.CurrentStreak} days of consistent tracking!");
+            messages.Add($"🔥 {profile.CurrentStreak} DAY STREAK! UNSTOPPABLE!");
+            messages.Add($"🚀 KEEP THE MOMENTUM GOING! {profile.CurrentStreak} DAYS!");
         }
 
-        if (profile.Level >= 10)
+        if (profile.Level >= 5)
         {
-            messages.Add($"📊 Building great financial awareness!");
+            messages.Add($"⚔️ LEVEL {profile.Level} WARRIOR!");
+            messages.Add($"🛡️ DEFENDING THE BUDGET LIKE A PRO!");
         }
 
         if (profile.TotalExpensesTracked > 50)
         {
-            messages.Add($"💰 {profile.TotalExpensesTracked} expenses tracked - excellent progress!");
+            messages.Add($"💎 {profile.TotalExpensesTracked} LOOT ITEMS TRACKED!");
+            messages.Add($"🧙‍♂️ YOUR WISDOM GROWS WITH EVERY EXPENSE!");
         }
 
-        if (messages.Count == 0)
-        {
-            messages.Add("📈 Track expenses to build better habits!");
-        }
+        // General fun messages
+        messages.Add("🎲 ROLL FOR INITIATIVE: TRACK AN EXPENSE!");
+        messages.Add("👾 GAME ON! YOUR FINANCES ARE LEVELING UP!");
+        messages.Add("🏰 BUILD YOUR FINANCIAL EMPIRE!");
+        messages.Add("⚡ POWER UP YOUR SAVINGS!");
 
         return messages[Random.Shared.Next(messages.Count)];
     }

@@ -3,10 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
              xmlns:models="clr-namespace:ExpenseTracker.Models"
+             xmlns:controls="clr-namespace:ExpenseTracker.Views.Controls"
              x:Class="ExpenseTracker.Views.DashboardPage"
              Title="{Binding Title}">
-
-
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Refresh"
@@ -38,72 +37,104 @@
             <StackLayout Spacing="20">
 
                 <!-- Gamification Quick Stats -->
-                <Frame BackgroundColor="#6200EA"
-                       Padding="16"
-                       CornerRadius="12"
-                       HasShadow="True">
+                <Frame Padding="0"
+                       CornerRadius="20"
+                       HasShadow="True"
+                       BorderColor="Transparent">
+                    <Frame.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#6200EA" Offset="0.0" />
+                            <GradientStop Color="#B388FF" Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Frame.Background>
+                    
                     <Grid RowDefinitions="Auto,Auto"
-                          RowSpacing="10">
+                          Padding="20"
+                          RowSpacing="15">
                         <!-- Header with level info -->
                         <Grid Grid.Row="0"
                               ColumnDefinitions="Auto,*,Auto">
-                            <Label Text="🎮"
-                                   FontSize="32"
-                                   VerticalOptions="Center"/>
+                            <Frame Padding="8"
+                                   CornerRadius="12"
+                                   BackgroundColor="White"
+                                   HasShadow="False">
+                                <Label Text="🎮"
+                                       FontSize="28"
+                                       VerticalOptions="Center"
+                                       HorizontalOptions="Center"/>
+                            </Frame>
+                            
                             <StackLayout Grid.Column="1"
-                                       Margin="10,0,0,0"
-                                       VerticalOptions="Center">
-                                <Label Text="{Binding GamificationProfile.Level, StringFormat='Level {0}'}"
+                                       Margin="12,0,0,0"
+                                       VerticalOptions="Center"
+                                       Spacing="2">
+                                <Label Text="{Binding GamificationProfile.Level, StringFormat='LEVEL {0}'}"
                                        TextColor="White"
-                                       FontSize="20"
-                                       FontAttributes="Bold"/>
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       CharacterSpacing="1"/>
                                 <Label Text="{Binding MotivationalMessage}"
                                        TextColor="White"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       LineBreakMode="TailTruncation"/>
+                                <Label Text="{Binding BudgetHealthMessage}"
+                                       TextColor="{Binding BudgetHealthColor}"
                                        FontSize="12"
-                                       Opacity="0.9"/>
+                                       FontAttributes="Italic"
+                                       LineBreakMode="TailTruncation"/>
                             </StackLayout>
+                            
                             <Button Grid.Column="2"
-                                    Text="View All"
+                                    Text="QUESTS"
                                     Command="{Binding NavigateToGamificationCommand}"
                                     BackgroundColor="White"
                                     TextColor="#6200EA"
                                     FontSize="12"
-                                    Padding="12,6"
-                                    CornerRadius="6"
-                                    VerticalOptions="Center"/>
+                                    FontAttributes="Bold"
+                                    Padding="16,8"
+                                    CornerRadius="20"
+                                    VerticalOptions="Center"
+                                    HeightRequest="36"/>
                         </Grid>
 
                         <!-- Quick stats bar -->
                         <Grid Grid.Row="1"
                               ColumnDefinitions="*,*,*"
-                              ColumnSpacing="8">
-                            <Frame BackgroundColor="#7C4DFF"
-                                   Padding="8"
-                                   CornerRadius="8">
-                                <StackLayout HorizontalOptions="Center">
+                              ColumnSpacing="12">
+                            <!-- Points -->
+                            <Frame BackgroundColor="#33FFFFFF"
+                                   Padding="10"
+                                   CornerRadius="15"
+                                   BorderColor="Transparent"
+                                   HasShadow="False">
+                                <StackLayout HorizontalOptions="Center" Spacing="0">
                                     <Label Text="{Binding GamificationProfile.TotalPoints}"
                                            TextColor="White"
-                                           FontSize="16"
+                                           FontSize="20"
                                            FontAttributes="Bold"
                                            HorizontalTextAlignment="Center"/>
-                                    <Label Text="Points"
-                                           TextColor="White"
+                                    <Label Text="POINTS"
+                                           TextColor="#E0E0E0"
                                            FontSize="10"
-                                           HorizontalTextAlignment="Center"
-                                           Opacity="0.9"/>
+                                           FontAttributes="Bold"
+                                           HorizontalTextAlignment="Center"/>
                                 </StackLayout>
                             </Frame>
                             
+                            <!-- Streak -->
                             <Frame Grid.Column="1"
-                                   BackgroundColor="#7C4DFF"
-                                   Padding="8"
-                                   CornerRadius="8">
-                                <StackLayout HorizontalOptions="Center">
-                                    <Label FontSize="16"
+                                   BackgroundColor="#33FFFFFF"
+                                   Padding="10"
+                                   CornerRadius="15"
+                                   BorderColor="Transparent"
+                                   HasShadow="False">
+                                <StackLayout HorizontalOptions="Center" Spacing="0">
+                                    <Label FontSize="20"
                                            FontAttributes="Bold"
                                            HorizontalTextAlignment="Center">
                                         <Label.Text>
-                                            <MultiBinding StringFormat="🔥 {0}">
+                                            <MultiBinding StringFormat="{}{0} 🔥">
                                                 <Binding Path="GamificationProfile.CurrentStreak"/>
                                             </MultiBinding>
                                         </Label.Text>
@@ -111,29 +142,32 @@
                                             <Color>White</Color>
                                         </Label.TextColor>
                                     </Label>
-                                    <Label Text="Streak"
-                                           TextColor="White"
+                                    <Label Text="STREAK"
+                                           TextColor="#E0E0E0"
                                            FontSize="10"
-                                           HorizontalTextAlignment="Center"
-                                           Opacity="0.9"/>
+                                           FontAttributes="Bold"
+                                           HorizontalTextAlignment="Center"/>
                                 </StackLayout>
                             </Frame>
                             
+                            <!-- Tracked -->
                             <Frame Grid.Column="2"
-                                   BackgroundColor="#7C4DFF"
-                                   Padding="8"
-                                   CornerRadius="8">
-                                <StackLayout HorizontalOptions="Center">
+                                   BackgroundColor="#33FFFFFF"
+                                   Padding="10"
+                                   CornerRadius="15"
+                                   BorderColor="Transparent"
+                                   HasShadow="False">
+                                <StackLayout HorizontalOptions="Center" Spacing="0">
                                     <Label Text="{Binding GamificationProfile.TotalExpensesTracked}"
                                            TextColor="White"
-                                           FontSize="16"
+                                           FontSize="20"
                                            FontAttributes="Bold"
                                            HorizontalTextAlignment="Center"/>
-                                    <Label Text="Tracked"
-                                           TextColor="White"
+                                    <Label Text="TRACKED"
+                                           TextColor="#E0E0E0"
                                            FontSize="10"
-                                           HorizontalTextAlignment="Center"
-                                           Opacity="0.9"/>
+                                           FontAttributes="Bold"
+                                           HorizontalTextAlignment="Center"/>
                                 </StackLayout>
                             </Frame>
                         </Grid>
@@ -336,5 +370,21 @@
 
             </StackLayout>
         </ScrollView>
+
+        <!-- Confetti Overlay -->
+        <controls:ConfettiView x:Name="ConfettiOverlay"
+                               InputTransparent="True"
+                               VerticalOptions="Fill"
+                               HorizontalOptions="Fill">
+            <controls:ConfettiView.Triggers>
+                <DataTrigger TargetType="controls:ConfettiView"
+                             Binding="{Binding IsLevelUp}"
+                             Value="True">
+                    <Trigger.EnterActions>
+                        <vm:StartConfettiAction TargetName="ConfettiOverlay"/>
+                    </Trigger.EnterActions>
+                </DataTrigger>
+            </controls:ConfettiView.Triggers>
+        </controls:ConfettiView>
     </Grid>
 </ContentPage>

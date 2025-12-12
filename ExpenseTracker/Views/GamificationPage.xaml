@@ -47,144 +47,6 @@
                            HorizontalTextAlignment="Center"/>
                 </Frame>
 
-                <!-- Profile Card -->
-                <Frame BackgroundColor="White"
-                       Padding="20"
-                       CornerRadius="12"
-                       HasShadow="True">
-                    <Grid RowDefinitions="Auto,Auto,Auto,Auto"
-                          RowSpacing="15">
-                        
-                        <!-- Level Header -->
-                        <Grid Grid.Row="0"
-                              ColumnDefinitions="*,Auto">
-                            <StackLayout>
-                                <Label Text="Your Level"
-                                       FontSize="14"
-                                       TextColor="Gray"/>
-                                <Label Text="{Binding Profile.Level, StringFormat='Level {0}'}"
-                                       FontSize="32"
-                                       FontAttributes="Bold"
-                                       TextColor="#6200EA"/>
-                            </StackLayout>
-                            
-                            <Label Grid.Column="1"
-                                   Text="🎮"
-                                   FontSize="48"
-                                   VerticalOptions="Center"/>
-                        </Grid>
-
-                        <!-- XP Progress Bar -->
-                        <StackLayout Grid.Row="1">
-                            <Grid ColumnDefinitions="*,Auto">
-                                <Label Text="Experience Points"
-                                       FontSize="12"
-                                       TextColor="Gray"/>
-                                <Label Grid.Column="1"
-                                       FontSize="12"
-                                       TextColor="Gray">
-                                    <Label.Text>
-                                        <MultiBinding StringFormat="{}{0}/{1} XP">
-                                            <Binding Path="Profile.ExperiencePoints"/>
-                                            <Binding Path="Profile.ExperienceToNextLevel"/>
-                                        </MultiBinding>
-                                    </Label.Text>
-                                </Label>
-                            </Grid>
-                            <ProgressBar Progress="{Binding Profile.LevelProgressPercentage}"
-                                         ProgressColor="#6200EA"
-                                         HeightRequest="8"
-                                         Margin="0,4,0,0"/>
-                        </StackLayout>
-
-                        <!-- Stats Grid -->
-                        <Grid Grid.Row="2"
-                              ColumnDefinitions="*,*,*"
-                              ColumnSpacing="10">
-                            <!-- Total Points -->
-                            <Frame BackgroundColor="#E8EAF6"
-                                   Padding="12"
-                                   CornerRadius="8">
-                                <StackLayout HorizontalOptions="Center">
-                                    <Label Text="💰"
-                                           FontSize="24"
-                                           HorizontalTextAlignment="Center"/>
-                                    <Label Text="{Binding Profile.TotalPoints}"
-                                           FontSize="20"
-                                           FontAttributes="Bold"
-                                           HorizontalTextAlignment="Center"/>
-                                    <Label Text="Points"
-                                           FontSize="10"
-                                           TextColor="Gray"
-                                           HorizontalTextAlignment="Center"/>
-                                </StackLayout>
-                            </Frame>
-
-                            <!-- Current Streak -->
-                            <Frame Grid.Column="1"
-                                   BackgroundColor="#FFE0B2"
-                                   Padding="12"
-                                   CornerRadius="8">
-                                <StackLayout HorizontalOptions="Center">
-                                    <Label Text="🔥"
-                                           FontSize="24"
-                                           HorizontalTextAlignment="Center"/>
-                                    <Label Text="{Binding Profile.CurrentStreak}"
-                                           FontSize="20"
-                                           FontAttributes="Bold"
-                                           HorizontalTextAlignment="Center"/>
-                                    <Label Text="Day Streak"
-                                           FontSize="10"
-                                           TextColor="Gray"
-                                           HorizontalTextAlignment="Center"/>
-                                </StackLayout>
-                            </Frame>
-
-                            <!-- Expenses Tracked -->
-                            <Frame Grid.Column="2"
-                                   BackgroundColor="#C8E6C9"
-                                   Padding="12"
-                                   CornerRadius="8">
-                                <StackLayout HorizontalOptions="Center">
-                                    <Label Text="📊"
-                                           FontSize="24"
-                                           HorizontalTextAlignment="Center"/>
-                                    <Label Text="{Binding Profile.TotalExpensesTracked}"
-                                           FontSize="20"
-                                           FontAttributes="Bold"
-                                           HorizontalTextAlignment="Center"/>
-                                    <Label Text="Tracked"
-                                           FontSize="10"
-                                           TextColor="Gray"
-                                           HorizontalTextAlignment="Center"/>
-                                </StackLayout>
-                            </Frame>
-                        </Grid>
-
-                        <!-- Longest Streak -->
-                        <Frame Grid.Row="3"
-                               BackgroundColor="#FFF3E0"
-                               Padding="12"
-                               CornerRadius="8">
-                            <Grid ColumnDefinitions="Auto,*">
-                                <Label Text="🏆"
-                                       FontSize="24"
-                                       VerticalOptions="Center"/>
-                                <StackLayout Grid.Column="1"
-                                           Margin="10,0,0,0"
-                                           VerticalOptions="Center">
-                                    <Label Text="Longest Streak"
-                                           FontSize="12"
-                                           TextColor="Gray"/>
-                                    <Label Text="{Binding Profile.LongestStreak, StringFormat='{0} days'}"
-                                           FontSize="18"
-                                           FontAttributes="Bold"/>
-                                </StackLayout>
-                            </Grid>
-                        </Frame>
-                    </Grid>
-                </Frame>
-
                 <!-- Budget Goal Progress (70-20-10 Rule) -->
                 <Frame BackgroundColor="White"
                        Padding="16"
@@ -402,6 +264,13 @@
 
             </StackLayout>
         </ScrollView>
+
+        <!-- Confetti Container -->
+        <Grid x:Name="ConfettiContainer"
+              InputTransparent="True"
+              CascadeInputTransparent="False"
+              IsVisible="{Binding ShowAchievementUnlocked}"
+              ZIndex="99"/>
 
         <!-- Achievement Unlocked Popup -->
         <Frame IsVisible="{Binding ShowAchievementUnlocked}"
