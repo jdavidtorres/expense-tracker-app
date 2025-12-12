@@ -1,14 +1,12 @@
-using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ExpenseTracker.Constants;
 using ExpenseTracker.Models;
 using ExpenseTracker.Services;
 
 namespace ExpenseTracker.ViewModels;
 
 /// <summary>
-/// ViewModel for adding or editing a subscription
+/// ViewModel for subscription form (add/edit)
 /// </summary>
 [QueryProperty(nameof(Subscription), "subscription")]
 public partial class SubscriptionFormViewModel : BaseViewModel
@@ -26,14 +24,14 @@ public partial class SubscriptionFormViewModel : BaseViewModel
     private string formTitle = "Add Subscription";
 
     /// <summary>
-    /// List of available billing cycles for selection
+    /// Gets the list of available billing cycles
     /// </summary>
     public List<BillingCycle> BillingCycles { get; } = Enum.GetValues<BillingCycle>().ToList();
 
     public SubscriptionFormViewModel(ExpenseService expenseService, GamificationService gamificationService)
     {
-        _expenseService = expenseService;
-        _gamificationService = gamificationService;
+        _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
+        _gamificationService = gamificationService ?? throw new ArgumentNullException(nameof(gamificationService));
     }
 
     partial void OnSubscriptionChanged(Subscription value)
@@ -50,23 +48,16 @@ public partial class SubscriptionFormViewModel : BaseViewModel
         }
     }
 
-    /// <summary>
-    /// Validates and saves the subscription
-    /// </summary>
     [RelayCommand]
     private async Task SaveAsync()
     {
+        if (!ValidateSubscription())
+            return;
+
         try
         {
             IsLoading = true;
             ClearError();
-
-            // Validate subscription data
-            if (!ValidateSubscription(out var validationError))
-            {
-                ErrorMessage = validationError;
-                return;
-            }
 
             Subscription.UpdatedAt = DateTime.UtcNow;
 
@@ -83,14 +74,21 @@ public partial class SubscriptionFormViewModel : BaseViewModel
                 var newAchievements = await _gamificationService.RecordExpenseTrackedAsync();
                 
                 // Show achievement notification if any were unlocked
-                await ShowAchievementNotificationAsync(newAchievements);
+                if (newAchievements.Any())
+                {
+                    var achievement = newAchievements.First();
+                    await Application.Current!.MainPage!.DisplayAlert(
+                        "🎉 Achievement Unlocked!",
+                        $"{achievement.Icon} {achievement.Name}\n{achievement.Description}\n+{achievement.PointsReward} Points!",
+                        "Awesome!");
+                }
             }
 
-            await Shell.Current.GoToAsync(NavigationRoutes.NavigateBack);
+            await Shell.Current.GoToAsync("..");
         }
         catch (Exception ex)
         {
-            ErrorMessage = string.Format(ErrorMessages.SaveFailed, "subscription", ex.Message);
+            ErrorMessage = $"Failed to save subscription: {ex.Message}";
         }
         finally
         {
@@ -98,54 +96,30 @@ public partial class SubscriptionFormViewModel : BaseViewModel
         }
     }
 
+    [RelayCommand]
+    private async Task CancelAsync()
+    {
+        await Shell.Current.GoToAsync("..");
+    }
+
     /// <summary>
-    /// Validates subscription data
+    /// Validates the subscription data
     /// </summary>
-    private bool ValidateSubscription(out string? errorMessage)
+    /// <returns>True if valid, false otherwise</returns>
+    private bool ValidateSubscription()
     {
         if (string.IsNullOrWhiteSpace(Subscription.Name))
         {
-            errorMessage = ErrorMessages.NameRequired;
+            SetError("Subscription name is required.");
             return false;
         }
 
         if (Subscription.Amount <= 0)
         {
-            errorMessage = ErrorMessages.AmountMustBeGreaterThanZero;
+            SetError("Amount must be greater than 0.");
             return false;
         }
 
-        if (Subscription.NextBillingDate < DateTime.Today)
-        {
-            errorMessage = ErrorMessages.BillingDateCannotBeInPast;
-            return false;
-        }
-
-        errorMessage = null;
         return true;
-    }
-
-    /// <summary>
-    /// Shows achievement notification if any achievements were unlocked
-    /// </summary>
-    private async Task ShowAchievementNotificationAsync(List<Achievement> newAchievements)
-    {
-        if (newAchievements.Any() && Application.Current?.MainPage != null)
-        {
-            var achievement = newAchievements.First();
-            await Application.Current.MainPage.DisplayAlert(
-                "🎉 Achievement Unlocked!",
-                $"{achievement.Icon} {achievement.Name}\n{achievement.Description}\n+{achievement.PointsReward} Points!",
-                "Awesome!");
-        }
-    }
-
-    /// <summary>
-    /// Cancels the form and navigates back
-    /// </summary>
-    [RelayCommand]
-    private async Task CancelAsync()
-    {
-        await Shell.Current.GoToAsync(NavigationRoutes.NavigateBack);
     }
 }

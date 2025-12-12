@@ -1,14 +1,12 @@
-using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ExpenseTracker.Constants;
 using ExpenseTracker.Models;
 using ExpenseTracker.Services;
 
 namespace ExpenseTracker.ViewModels;
 
 /// <summary>
-/// ViewModel for adding or editing an invoice
+/// ViewModel for invoice form (add/edit)
 /// </summary>
 [QueryProperty(nameof(Invoice), "invoice")]
 public partial class InvoiceFormViewModel : BaseViewModel
@@ -26,14 +24,14 @@ public partial class InvoiceFormViewModel : BaseViewModel
     private string formTitle = "Add Invoice";
 
     /// <summary>
-    /// List of available invoice statuses for selection
+    /// Gets the list of available invoice statuses
     /// </summary>
     public List<InvoiceStatus> InvoiceStatuses { get; } = Enum.GetValues<InvoiceStatus>().ToList();
 
     public InvoiceFormViewModel(ExpenseService expenseService, GamificationService gamificationService)
     {
-        _expenseService = expenseService;
-        _gamificationService = gamificationService;
+        _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
+        _gamificationService = gamificationService ?? throw new ArgumentNullException(nameof(gamificationService));
     }
 
     partial void OnInvoiceChanged(Invoice value)
@@ -50,23 +48,16 @@ public partial class InvoiceFormViewModel : BaseViewModel
         }
     }
 
-    /// <summary>
-    /// Validates and saves the invoice
-    /// </summary>
     [RelayCommand]
     private async Task SaveAsync()
     {
+        if (!ValidateInvoice())
+            return;
+
         try
         {
             IsLoading = true;
             ClearError();
-
-            // Validate invoice data
-            if (!ValidateInvoice(out var validationError))
-            {
-                ErrorMessage = validationError;
-                return;
-            }
 
             Invoice.UpdatedAt = DateTime.UtcNow;
 
@@ -83,14 +74,21 @@ public partial class InvoiceFormViewModel : BaseViewModel
                 var newAchievements = await _gamificationService.RecordExpenseTrackedAsync();
                 
                 // Show achievement notification if any were unlocked
-                await ShowAchievementNotificationAsync(newAchievements);
+                if (newAchievements.Any())
+                {
+                    var achievement = newAchievements.First();
+                    await Application.Current!.MainPage!.DisplayAlert(
+                        "🎉 Achievement Unlocked!",
+                        $"{achievement.Icon} {achievement.Name}\n{achievement.Description}\n+{achievement.PointsReward} Points!",
+                        "Awesome!");
+                }
             }
 
-            await Shell.Current.GoToAsync(NavigationRoutes.NavigateBack);
+            await Shell.Current.GoToAsync("..");
         }
         catch (Exception ex)
         {
-            ErrorMessage = string.Format(ErrorMessages.SaveFailed, "invoice", ex.Message);
+            ErrorMessage = $"Failed to save invoice: {ex.Message}";
         }
         finally
         {
@@ -98,54 +96,36 @@ public partial class InvoiceFormViewModel : BaseViewModel
         }
     }
 
+    [RelayCommand]
+    private async Task CancelAsync()
+    {
+        await Shell.Current.GoToAsync("..");
+    }
+
     /// <summary>
-    /// Validates invoice data
+    /// Validates the invoice data
     /// </summary>
-    private bool ValidateInvoice(out string? errorMessage)
+    /// <returns>True if valid, false otherwise</returns>
+    private bool ValidateInvoice()
     {
         if (string.IsNullOrWhiteSpace(Invoice.InvoiceNumber))
         {
-            errorMessage = "Invoice number is required.";
+            SetError("Invoice number is required.");
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(Invoice.Name))
         {
-            errorMessage = ErrorMessages.NameRequired;
+            SetError("Invoice name is required.");
             return false;
         }
 
         if (Invoice.Amount <= 0)
         {
-            errorMessage = ErrorMessages.AmountMustBeGreaterThanZero;
+            SetError("Amount must be greater than 0.");
             return false;
         }
 
-        errorMessage = null;
         return true;
-    }
-
-    /// <summary>
-    /// Shows achievement notification if any achievements were unlocked
-    /// </summary>
-    private async Task ShowAchievementNotificationAsync(List<Achievement> newAchievements)
-    {
-        if (newAchievements.Any() && Application.Current?.MainPage != null)
-        {
-            var achievement = newAchievements.First();
-            await Application.Current.MainPage.DisplayAlert(
-                "🎉 Achievement Unlocked!",
-                $"{achievement.Icon} {achievement.Name}\n{achievement.Description}\n+{achievement.PointsReward} Points!",
-                "Awesome!");
-        }
-    }
-
-    /// <summary>
-    /// Cancels the form and navigates back
-    /// </summary>
-    [RelayCommand]
-    private async Task CancelAsync()
-    {
-        await Shell.Current.GoToAsync(NavigationRoutes.NavigateBack);
     }
 }

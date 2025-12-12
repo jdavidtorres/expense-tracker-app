@@ -1,14 +1,13 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ExpenseTracker.Constants;
 using ExpenseTracker.Models;
 using ExpenseTracker.Services;
 
 namespace ExpenseTracker.ViewModels;
 
 /// <summary>
-/// ViewModel for managing subscriptions
+/// ViewModel for managing subscriptions display and operations
 /// </summary>
 public partial class SubscriptionsViewModel : BaseViewModel
 {
@@ -22,12 +21,9 @@ public partial class SubscriptionsViewModel : BaseViewModel
 
     public SubscriptionsViewModel(ExpenseService expenseService)
     {
-        _expenseService = expenseService;
+        _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
     }
 
-    /// <summary>
-    /// Loads all subscriptions from the service
-    /// </summary>
     [RelayCommand]
     private async Task LoadSubscriptionsAsync()
     {
@@ -41,7 +37,7 @@ public partial class SubscriptionsViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
-            ErrorMessage = string.Format(ErrorMessages.LoadFailed, "subscriptions", ex.Message);
+            ErrorMessage = $"Failed to load subscriptions: {ex.Message}";
         }
         finally
         {
@@ -49,71 +45,41 @@ public partial class SubscriptionsViewModel : BaseViewModel
         }
     }
 
-    /// <summary>
-    /// Deletes a subscription
-    /// </summary>
     [RelayCommand]
-    private async Task DeleteSubscriptionAsync(Subscription subscription)
+    private async Task DeleteSubscriptionAsync(string id)
     {
-        ArgumentNullException.ThrowIfNull(subscription);
+        if (string.IsNullOrWhiteSpace(id))
+            return;
 
         try
         {
-            await _expenseService.DeleteSubscriptionAsync(subscription.Id);
+            await _expenseService.DeleteSubscriptionAsync(id);
             await LoadSubscriptionsAsync();
         }
         catch (Exception ex)
         {
-            ErrorMessage = string.Format(ErrorMessages.DeleteFailed, "subscription", ex.Message);
+            ErrorMessage = $"Failed to delete subscription: {ex.Message}";
         }
     }
 
-    /// <summary>
-    /// Navigates to add a new subscription
-    /// </summary>
     [RelayCommand]
-    private async Task AddSubscriptionAsync()
+    private async Task NavigateToAddSubscriptionAsync()
     {
-        await Shell.Current.GoToAsync(NavigationRoutes.AddSubscription);
+        await Shell.Current.GoToAsync("add-subscription");
     }
 
-    /// <summary>
-    /// Navigates to edit an existing subscription
-    /// </summary>
     [RelayCommand]
-    private async Task EditSubscriptionAsync(Subscription subscription)
+    private async Task NavigateToEditSubscriptionAsync(Subscription subscription)
     {
-        ArgumentNullException.ThrowIfNull(subscription);
-        await Shell.Current.GoToAsync($"{NavigationRoutes.EditSubscription}?id={subscription.Id}");
+        if (subscription == null)
+            return;
+
+        await Shell.Current.GoToAsync($"edit-subscription?id={subscription.Id}");
     }
 
-    /// <summary>
-    /// Refreshes the subscriptions list
-    /// </summary>
     [RelayCommand]
     private async Task RefreshAsync()
     {
         await LoadSubscriptionsAsync();
-    }
-
-    /// <summary>
-    /// Toggles subscription status (active/inactive)
-    /// </summary>
-    [RelayCommand]
-    private async Task ToggleSubscriptionStatusAsync(Subscription subscription)
-    {
-        ArgumentNullException.ThrowIfNull(subscription);
-
-        try
-        {
-            subscription.IsActive = !subscription.IsActive;
-            subscription.UpdatedAt = DateTime.UtcNow;
-            await _expenseService.UpdateSubscriptionAsync(subscription);
-            await LoadSubscriptionsAsync();
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = string.Format(ErrorMessages.UpdateFailed, "subscription status", ex.Message);
-        }
     }
 }

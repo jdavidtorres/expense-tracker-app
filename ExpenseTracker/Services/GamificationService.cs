@@ -11,7 +11,6 @@ public class GamificationService
 {
     private GamificationProfile? _profile;
     private readonly List<Achievement> _allAchievements;
-    private readonly SemaphoreSlim _profileLock = new(1, 1);
 
     public GamificationService()
     {
@@ -21,70 +20,58 @@ public class GamificationService
     /// <summary>
     /// Get or create the user's gamification profile
     /// </summary>
-    public async Task<GamificationProfile> GetProfileAsync()
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The user's gamification profile</returns>
+    public async Task<GamificationProfile> GetProfileAsync(CancellationToken cancellationToken = default)
     {
         if (_profile != null)
             return _profile;
 
-        await _profileLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            // Double-check pattern
-            if (_profile != null)
-                return _profile;
-
-            try
+            var json = await SecureStorage.GetAsync(GamificationConstants.ProfileStorageKey).ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(json))
             {
-                var json = await SecureStorage.GetAsync(StorageKeys.GamificationProfile).ConfigureAwait(false);
-                if (!string.IsNullOrEmpty(json))
-                {
-                    _profile = JsonSerializer.Deserialize<GamificationProfile>(json);
-                }
+                _profile = JsonSerializer.Deserialize<GamificationProfile>(json);
             }
-            catch (Exception)
-            {
-                // If loading fails, create new profile
-            }
-
-            _profile ??= new GamificationProfile();
-            return _profile;
         }
-        finally
+        catch (Exception)
         {
-            _profileLock.Release();
+            // If loading fails, create new profile
         }
+
+        _profile ??= new GamificationProfile();
+        return _profile;
     }
 
     /// <summary>
     /// Save the gamification profile to storage
     /// </summary>
-    private async Task SaveProfileAsync()
+    private async Task SaveProfileAsync(CancellationToken cancellationToken = default)
     {
         if (_profile == null)
             return;
 
-        await _profileLock.WaitAsync().ConfigureAwait(false);
         try
         {
             var json = JsonSerializer.Serialize(_profile);
-            await SecureStorage.SetAsync(StorageKeys.GamificationProfile, json).ConfigureAwait(false);
+            await SecureStorage.SetAsync(GamificationConstants.ProfileStorageKey, json).ConfigureAwait(false);
         }
         catch (Exception)
         {
             // Handle storage errors gracefully
-        }
-        finally
-        {
-            _profileLock.Release();
         }
     }
 
     /// <summary>
     /// Award points to the user and check for level up
     /// </summary>
-    public async Task<(bool leveledUp, int newLevel)> AwardPointsAsync(int points)
+    /// <param name="points">Number of points to award</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>Tuple indicating if user leveled up and the new level</returns>
+    public async Task<(bool leveledUp, int newLevel)> AwardPointsAsync(int points, CancellationToken cancellationToken = default)
     {
-        var profile = await GetProfileAsync().ConfigureAwait(false);
+        var profile = await GetProfileAsync(cancellationToken).ConfigureAwait(false);
         var oldLevel = profile.Level;
         
         profile.ExperiencePoints += points;
@@ -97,7 +84,7 @@ public class GamificationService
             profile.Level++;
         }
 
-        await SaveProfileAsync().ConfigureAwait(false);
+        await SaveProfileAsync(cancellationToken).ConfigureAwait(false);
 
         var leveledUp = profile.Level > oldLevel;
         return (leveledUp, profile.Level);
@@ -106,31 +93,33 @@ public class GamificationService
     /// <summary>
     /// Record an expense tracking action
     /// </summary>
-    public async Task<List<Achievement>> RecordExpenseTrackedAsync()
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>List of newly unlocked achievements</returns>
+    public async Task<List<Achievement>> RecordExpenseTrackedAsync(CancellationToken cancellationToken = default)
     {
-        var profile = await GetProfileAsync().ConfigureAwait(false);
+        var profile = await GetProfileAsync(cancellationToken).ConfigureAwait(false);
         profile.TotalExpensesTracked++;
         profile.LastActivityDate = DateTime.UtcNow;
 
         // Update streak
-        await UpdateStreakAsync().ConfigureAwait(false);
+        await UpdateStreakAsync(cancellationToken).ConfigureAwait(false);
 
         // Award points
-        await AwardPointsAsync(PointAction.AddExpense).ConfigureAwait(false);
+        await AwardPointsAsync(GamificationConstants.Points.AddExpense, cancellationToken).ConfigureAwait(false);
 
         // Check and unlock achievements
-        var newAchievements = await CheckAchievementsAsync().ConfigureAwait(false);
+        var newAchievements = await CheckAchievementsAsync(cancellationToken).ConfigureAwait(false);
 
-        await SaveProfileAsync().ConfigureAwait(false);
+        await SaveProfileAsync(cancellationToken).ConfigureAwait(false);
         return newAchievements;
     }
 
     /// <summary>
     /// Update the user's tracking streak
     /// </summary>
-    private async Task UpdateStreakAsync()
+    private async Task UpdateStreakAsync(CancellationToken cancellationToken = default)
     {
-        var profile = await GetProfileAsync().ConfigureAwait(false);
+        var profile = await GetProfileAsync(cancellationToken).ConfigureAwait(false);
         var today = DateTime.UtcNow.Date;
         var lastActivity = profile.LastActivityDate.Date;
 
@@ -153,15 +142,17 @@ public class GamificationService
 
             // Award streak points only once per milestone
             // Weekly bonus (every 7 days)
-            if (profile.CurrentStreak % 7 == 0 && profile.LastWeeklyBonusDay != profile.CurrentStreak)
+            if (profile.CurrentStreak % GamificationConstants.StreakMilestones.WeeklyDays == 0 
+                && profile.LastWeeklyBonusDay != profile.CurrentStreak)
             {
-                await AwardPointsAsync(PointAction.WeeklyStreak).ConfigureAwait(false);
+                await AwardPointsAsync(GamificationConstants.Points.WeeklyStreak, cancellationToken).ConfigureAwait(false);
                 profile.LastWeeklyBonusDay = profile.CurrentStreak;
             }
             // Monthly bonus (every 30 days)
-            if (profile.CurrentStreak % 30 == 0 && profile.LastMonthlyBonusDay != profile.CurrentStreak)
+            if (profile.CurrentStreak % GamificationConstants.StreakMilestones.MonthlyDays == 0 
+                && profile.LastMonthlyBonusDay != profile.CurrentStreak)
             {
-                await AwardPointsAsync(PointAction.MonthlyStreak).ConfigureAwait(false);
+                await AwardPointsAsync(GamificationConstants.Points.MonthlyStreak, cancellationToken).ConfigureAwait(false);
                 profile.LastMonthlyBonusDay = profile.CurrentStreak;
             }
         }
@@ -179,9 +170,9 @@ public class GamificationService
     /// <summary>
     /// Check and unlock any newly earned achievements (without awarding points to prevent recursion)
     /// </summary>
-    private async Task<List<Achievement>> CheckAchievementsAsync()
+    private async Task<List<Achievement>> CheckAchievementsAsync(CancellationToken cancellationToken = default)
     {
-        var profile = await GetProfileAsync().ConfigureAwait(false);
+        var profile = await GetProfileAsync(cancellationToken).ConfigureAwait(false);
         var newlyUnlocked = new List<Achievement>();
 
         var lockedAchievements = _allAchievements.Where(a => !profile.UnlockedAchievements.Contains(a.Id));
@@ -190,18 +181,18 @@ public class GamificationService
         {
             var shouldUnlock = achievement.Id switch
             {
-                AchievementIds.FirstExpense => profile.TotalExpensesTracked >= 1,
-                AchievementIds.ExpenseNovice => profile.TotalExpensesTracked >= 10,
-                AchievementIds.ExpenseTracker => profile.TotalExpensesTracked >= 50,
-                AchievementIds.ExpenseMaster => profile.TotalExpensesTracked >= 100,
-                AchievementIds.WeekStreak => profile.CurrentStreak >= 7,
-                AchievementIds.MonthStreak => profile.CurrentStreak >= 30,
-                AchievementIds.StreakLegend => profile.LongestStreak >= 100,
-                AchievementIds.Level5 => profile.Level >= 5,
-                AchievementIds.Level10 => profile.Level >= 10,
-                AchievementIds.Level25 => profile.Level >= 25,
-                AchievementIds.PointCollector => profile.TotalPoints >= 1000,
-                AchievementIds.PointHoarder => profile.TotalPoints >= 5000,
+                GamificationConstants.AchievementIds.FirstExpense => profile.TotalExpensesTracked >= GamificationConstants.ExpenseThresholds.First,
+                GamificationConstants.AchievementIds.ExpenseNovice => profile.TotalExpensesTracked >= GamificationConstants.ExpenseThresholds.Novice,
+                GamificationConstants.AchievementIds.ExpenseTracker => profile.TotalExpensesTracked >= GamificationConstants.ExpenseThresholds.Tracker,
+                GamificationConstants.AchievementIds.ExpenseMaster => profile.TotalExpensesTracked >= GamificationConstants.ExpenseThresholds.Master,
+                GamificationConstants.AchievementIds.WeekStreak => profile.CurrentStreak >= GamificationConstants.StreakMilestones.WeeklyDays,
+                GamificationConstants.AchievementIds.MonthStreak => profile.CurrentStreak >= GamificationConstants.StreakMilestones.MonthlyDays,
+                GamificationConstants.AchievementIds.StreakLegend => profile.LongestStreak >= GamificationConstants.StreakMilestones.LegendaryDays,
+                GamificationConstants.AchievementIds.Level5 => profile.Level >= GamificationConstants.LevelThresholds.RisingStar,
+                GamificationConstants.AchievementIds.Level10 => profile.Level >= GamificationConstants.LevelThresholds.SkilledTracker,
+                GamificationConstants.AchievementIds.Level25 => profile.Level >= GamificationConstants.LevelThresholds.FinanceGuru,
+                GamificationConstants.AchievementIds.PointCollector => profile.TotalPoints >= GamificationConstants.PointThresholds.Collector,
+                GamificationConstants.AchievementIds.PointHoarder => profile.TotalPoints >= GamificationConstants.PointThresholds.Hoarder,
                 _ => false
             };
 
@@ -231,9 +222,11 @@ public class GamificationService
     /// <summary>
     /// Get all achievements with unlock status
     /// </summary>
-    public async Task<List<Achievement>> GetAchievementsAsync()
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>List of all achievements</returns>
+    public async Task<List<Achievement>> GetAchievementsAsync(CancellationToken cancellationToken = default)
     {
-        var profile = await GetProfileAsync().ConfigureAwait(false);
+        var profile = await GetProfileAsync(cancellationToken).ConfigureAwait(false);
         
         foreach (var achievement in _allAchievements)
         {
@@ -279,7 +272,7 @@ public class GamificationService
             // First steps
             new Achievement
             {
-                Id = AchievementIds.FirstExpense,
+                Id = GamificationConstants.AchievementIds.FirstExpense,
                 Name = "First Step",
                 Description = "Track your first expense",
                 Icon = "🎯",
@@ -288,7 +281,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = AchievementIds.ExpenseNovice,
+                Id = GamificationConstants.AchievementIds.ExpenseNovice,
                 Name = "Expense Novice",
                 Description = "Track 10 expenses",
                 Icon = "📝",
@@ -297,7 +290,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = AchievementIds.ExpenseTracker,
+                Id = GamificationConstants.AchievementIds.ExpenseTracker,
                 Name = "Expense Tracker",
                 Description = "Track 50 expenses",
                 Icon = "📊",
@@ -306,7 +299,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = AchievementIds.ExpenseMaster,
+                Id = GamificationConstants.AchievementIds.ExpenseMaster,
                 Name = "Expense Master",
                 Description = "Track 100 expenses",
                 Icon = "👑",
@@ -317,7 +310,7 @@ public class GamificationService
             // Streaks
             new Achievement
             {
-                Id = AchievementIds.WeekStreak,
+                Id = GamificationConstants.AchievementIds.WeekStreak,
                 Name = "Week Warrior",
                 Description = "Track expenses for 7 days in a row",
                 Icon = "🔥",
@@ -326,7 +319,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = AchievementIds.MonthStreak,
+                Id = GamificationConstants.AchievementIds.MonthStreak,
                 Name = "Monthly Master",
                 Description = "Track expenses for 30 days in a row",
                 Icon = "⭐",
@@ -335,7 +328,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = AchievementIds.StreakLegend,
+                Id = GamificationConstants.AchievementIds.StreakLegend,
                 Name = "Streak Legend",
                 Description = "Achieve a 100-day streak",
                 Icon = "🏆",
@@ -346,7 +339,7 @@ public class GamificationService
             // Levels
             new Achievement
             {
-                Id = AchievementIds.Level5,
+                Id = GamificationConstants.AchievementIds.Level5,
                 Name = "Rising Star",
                 Description = "Reach level 5",
                 Icon = "⭐",
@@ -355,7 +348,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = AchievementIds.Level10,
+                Id = GamificationConstants.AchievementIds.Level10,
                 Name = "Skilled Tracker",
                 Description = "Reach level 10",
                 Icon = "🌟",
@@ -364,7 +357,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = AchievementIds.Level25,
+                Id = GamificationConstants.AchievementIds.Level25,
                 Name = "Finance Guru",
                 Description = "Reach level 25",
                 Icon = "💎",
@@ -375,7 +368,7 @@ public class GamificationService
             // Points
             new Achievement
             {
-                Id = AchievementIds.PointCollector,
+                Id = GamificationConstants.AchievementIds.PointCollector,
                 Name = "Point Collector",
                 Description = "Earn 1000 total points",
                 Icon = "💰",
@@ -384,7 +377,7 @@ public class GamificationService
             },
             new Achievement
             {
-                Id = AchievementIds.PointHoarder,
+                Id = GamificationConstants.AchievementIds.PointHoarder,
                 Name = "Point Hoarder",
                 Description = "Earn 5000 total points",
                 Icon = "💎",
@@ -397,18 +390,21 @@ public class GamificationService
     /// <summary>
     /// Reset the gamification profile (for testing or user request)
     /// </summary>
-    public async Task ResetProfileAsync()
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    public async Task ResetProfileAsync(CancellationToken cancellationToken = default)
     {
         _profile = new GamificationProfile();
-        await SaveProfileAsync().ConfigureAwait(false);
+        await SaveProfileAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Get motivational message based on user's progress (focused on productivity, not gaming)
     /// </summary>
-    public async Task<string> GetMotivationalMessageAsync()
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>Motivational message</returns>
+    public async Task<string> GetMotivationalMessageAsync(CancellationToken cancellationToken = default)
     {
-        var profile = await GetProfileAsync().ConfigureAwait(false);
+        var profile = await GetProfileAsync(cancellationToken).ConfigureAwait(false);
 
         var messages = new List<string>();
 
@@ -417,12 +413,12 @@ public class GamificationService
             messages.Add($"✅ {profile.CurrentStreak} days of consistent tracking!");
         }
 
-        if (profile.Level >= 10)
+        if (profile.Level >= GamificationConstants.LevelThresholds.SkilledTracker)
         {
             messages.Add($"📊 Building great financial awareness!");
         }
 
-        if (profile.TotalExpensesTracked > 50)
+        if (profile.TotalExpensesTracked > GamificationConstants.ExpenseThresholds.Tracker)
         {
             messages.Add($"💰 {profile.TotalExpensesTracked} expenses tracked - excellent progress!");
         }

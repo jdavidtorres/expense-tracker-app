@@ -8,23 +8,21 @@ namespace ExpenseTracker.ViewModels;
 public abstract partial class BaseViewModel : ObservableObject
 {
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsNotLoading))]
     private bool isLoading;
 
     [ObservableProperty]
     private string? title;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasError))]
     private string? errorMessage;
 
     /// <summary>
-    /// Gets whether the ViewModel is not currently loading (inverse of IsLoading)
+    /// Gets a value indicating whether the ViewModel is not loading
     /// </summary>
     public bool IsNotLoading => !IsLoading;
-
+    
     /// <summary>
-    /// Gets whether the ViewModel has an error message
+    /// Gets a value indicating whether there is an error message
     /// </summary>
     public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
 
@@ -32,4 +30,59 @@ public abstract partial class BaseViewModel : ObservableObject
     /// Clears the current error message
     /// </summary>
     protected void ClearError() => ErrorMessage = null;
+
+    /// <summary>
+    /// Sets an error message
+    /// </summary>
+    /// <param name="message">The error message to set</param>
+    protected void SetError(string message) => ErrorMessage = message;
+
+    /// <summary>
+    /// Executes an async action with automatic loading state management and error handling
+    /// </summary>
+    /// <param name="action">The action to execute</param>
+    /// <param name="errorMessage">Optional custom error message</param>
+    protected async Task ExecuteAsync(Func<Task> action, string? errorMessage = null)
+    {
+        try
+        {
+            IsLoading = true;
+            ClearError();
+            await action();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = errorMessage ?? $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// Executes an async function with automatic loading state management and error handling
+    /// </summary>
+    /// <typeparam name="T">The return type</typeparam>
+    /// <param name="func">The function to execute</param>
+    /// <param name="errorMessage">Optional custom error message</param>
+    /// <returns>The result of the function or default value on error</returns>
+    protected async Task<T?> ExecuteAsync<T>(Func<Task<T>> func, string? errorMessage = null)
+    {
+        try
+        {
+            IsLoading = true;
+            ClearError();
+            return await func();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = errorMessage ?? $"An error occurred: {ex.Message}";
+            return default;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
 }
