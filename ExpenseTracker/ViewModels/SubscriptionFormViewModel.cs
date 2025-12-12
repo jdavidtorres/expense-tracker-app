@@ -11,7 +11,7 @@ namespace ExpenseTracker.ViewModels;
 [QueryProperty(nameof(Subscription), "subscription")]
 public partial class SubscriptionFormViewModel : BaseViewModel
 {
-    private readonly ExpenseService _expenseService;
+    private readonly LocalExpenseService _expenseService;
     private readonly GamificationService _gamificationService;
 
     [ObservableProperty]
@@ -28,7 +28,7 @@ public partial class SubscriptionFormViewModel : BaseViewModel
     /// </summary>
     public List<BillingCycle> BillingCycles { get; } = Enum.GetValues<BillingCycle>().ToList();
 
-    public SubscriptionFormViewModel(ExpenseService expenseService, GamificationService gamificationService)
+    public SubscriptionFormViewModel(LocalExpenseService expenseService, GamificationService gamificationService)
     {
         _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
         _gamificationService = gamificationService ?? throw new ArgumentNullException(nameof(gamificationService));

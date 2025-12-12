@@ -26,6 +26,21 @@
                       ContentTemplate="{DataTemplate views:InvoicesPage}"
                       Route="invoices"
                       Icon="file_text.png"/>
+
+        <ShellContent Title="Debts"
+                      ContentTemplate="{DataTemplate views:DebtsPage}"
+                      Route="debts"
+                      Icon="credit_card.png"/>
+
+        <ShellContent Title="Income"
+                      ContentTemplate="{DataTemplate views:IncomePage}"
+                      Route="incomes"
+                      Icon="credit_card.png"/>
+
+        <ShellContent Title="Savings"
+                      ContentTemplate="{DataTemplate views:SavingsGoalsPage}"
+                      Route="savings"
+                      Icon="piggy_bank.png"/>
     </TabBar>
 
 </Shell>

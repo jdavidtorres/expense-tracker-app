@@ -11,7 +11,7 @@ namespace ExpenseTracker.ViewModels;
 /// </summary>
 public partial class DashboardViewModel : BaseViewModel
 {
-    private readonly ExpenseService _expenseService;
+    private readonly LocalExpenseService _expenseService;
     private readonly GamificationService _gamificationService;
 
     [ObservableProperty]
@@ -44,7 +44,7 @@ public partial class DashboardViewModel : BaseViewModel
     [ObservableProperty]
     private bool isLevelUp;
 
-    public DashboardViewModel(ExpenseService expenseService, GamificationService gamificationService)
+    public DashboardViewModel(LocalExpenseService expenseService, GamificationService gamificationService)
     {
         _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
         _gamificationService = gamificationService ?? throw new ArgumentNullException(nameof(gamificationService));

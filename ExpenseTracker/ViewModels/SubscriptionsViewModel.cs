@@ -11,7 +11,7 @@ namespace ExpenseTracker.ViewModels;
 /// </summary>
 public partial class SubscriptionsViewModel : BaseViewModel
 {
-    private readonly ExpenseService _expenseService;
+    private readonly LocalExpenseService _expenseService;
 
     [ObservableProperty]
     private ObservableCollection<Subscription> subscriptions = new();
@@ -19,7 +19,7 @@ public partial class SubscriptionsViewModel : BaseViewModel
     [ObservableProperty]
     private Subscription? selectedSubscription;
 
-    public SubscriptionsViewModel(ExpenseService expenseService)
+    public SubscriptionsViewModel(LocalExpenseService expenseService)
     {
         _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
     }

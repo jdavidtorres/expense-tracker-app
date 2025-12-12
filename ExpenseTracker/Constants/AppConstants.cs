@@ -13,6 +13,15 @@ public static class NavigationRoutes
     public const string EditSubscription = "edit-subscription";
     public const string AddInvoice = "add-invoice";
     public const string EditInvoice = "edit-invoice";
+    public const string Debts = "debts";
+    public const string AddDebt = "add-debt";
+    public const string EditDebt = "edit-debt";
+    public const string Incomes = "incomes";
+    public const string AddIncome = "add-income";
+    public const string EditIncome = "edit-income";
+    public const string SavingsGoals = "savings-goals";
+    public const string AddSavingsGoal = "add-savings-goal";
+    public const string EditSavingsGoal = "edit-savings-goal";
     public const string NavigateBack = "..";
 }
 

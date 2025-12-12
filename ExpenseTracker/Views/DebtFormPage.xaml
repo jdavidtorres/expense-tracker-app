@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+             x:Class="ExpenseTracker.Views.DebtFormPage"
+             Title="Debt Details">
+    <ContentPage.Content>
+        <ScrollView>
+            <VerticalStackLayout Spacing="15" Padding="20">
+                <Label Text="Source (Person/Entity)" FontSize="16" />
+                <Entry Text="{Binding Debt.Source}" Placeholder="Name" />
+
+                <Label Text="Amount" FontSize="16" />
+                <Entry Text="{Binding Debt.Amount}" Keyboard="Numeric" Placeholder="0.00" />
+
+                <Label Text="Due Date" FontSize="16" />
+                <DatePicker Date="{Binding Debt.DueDate}" />
+
+                <Label Text="Status" FontSize="16" />
+                <Picker SelectedItem="{Binding Debt.Status}">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Pending</x:String>
+                            <x:String>Paid</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+                
+                <Label Text="Type" FontSize="16" />
+                <HorizontalStackLayout Spacing="10">
+                     <RadioButton Content="I Borrowed" IsChecked="{Binding Debt.IsOwedToMe, Converter={StaticResource InverseBoolConverter}}" GroupName="DebtType"/>
+                     <RadioButton Content="Lent to Someone" IsChecked="{Binding Debt.IsOwedToMe}" GroupName="DebtType"/>
+                </HorizontalStackLayout>
+
+                <Label Text="Notes" FontSize="16" />
+                <Editor Text="{Binding Debt.Notes}" HeightRequest="100" />
+
+                <Button Text="Save" Command="{Binding SaveCommand}" Margin="0,20,0,0" />
+                <Button Text="Cancel" Command="{Binding CancelCommand}" BackgroundColor="Gray" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+</ContentPage>

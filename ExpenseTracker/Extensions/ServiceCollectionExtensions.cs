@@ -1,3 +1,4 @@
+using ExpenseTracker.Data;
 using ExpenseTracker.Services;
 using ExpenseTracker.ViewModels;
 using ExpenseTracker.Views;
@@ -14,12 +15,11 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddAppServices(this IServiceCollection services)
     {
-        // Configure HttpClient for API calls
-        services.AddHttpClient<ExpenseService>(client =>
-        {
-            client.BaseAddress = new Uri("http://localhost:8083/api/");
-            client.Timeout = TimeSpan.FromSeconds(30);
-        });
+        // Register SQLite database service as singleton
+        services.AddSingleton<DatabaseService>();
+
+        // Register local expense service (SQLite-based, replaces HTTP ExpenseService)
+        services.AddSingleton<LocalExpenseService>();
 
         // Register singleton services
         services.AddSingleton<GamificationService>();
@@ -39,6 +39,13 @@ public static class ServiceCollectionExtensions
         services.AddTransient<SubscriptionFormViewModel>();
         services.AddTransient<InvoiceFormViewModel>();
 
+        services.AddTransient<DebtsViewModel>();
+        services.AddTransient<DebtFormViewModel>();
+        services.AddTransient<IncomesViewModel>();
+        services.AddTransient<IncomeFormViewModel>();
+        services.AddTransient<SavingsGoalsViewModel>();
+        services.AddTransient<SavingsGoalFormViewModel>();
+
         return services;
     }
 
@@ -53,6 +60,13 @@ public static class ServiceCollectionExtensions
         services.AddTransient<InvoicesPage>();
         services.AddTransient<SubscriptionFormPage>();
         services.AddTransient<InvoiceFormPage>();
+
+        services.AddTransient<DebtsPage>();
+        services.AddTransient<DebtFormPage>();
+        services.AddTransient<IncomePage>();
+        services.AddTransient<IncomeFormPage>();
+        services.AddTransient<SavingsGoalsPage>();
+        services.AddTransient<SavingsGoalFormPage>();
 
         return services;
     }

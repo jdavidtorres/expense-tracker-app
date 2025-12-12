@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:models="clr-namespace:ExpenseTracker.Models"
+             x:Class="ExpenseTracker.Views.IncomePage"
+             Title="Income">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Add" Command="{Binding NavigateToAddIncomeCommand}" IconImageSource="add.png" />
+    </ContentPage.ToolbarItems>
+    <Grid>
+        <ActivityIndicator IsVisible="{Binding IsLoading}" IsRunning="{Binding IsLoading}" VerticalOptions="Center" HorizontalOptions="Center" />
+        <RefreshView IsRefreshing="{Binding IsLoading}" Command="{Binding LoadIncomesCommand}" IsVisible="{Binding IsNotLoading}">
+            <CollectionView ItemsSource="{Binding Incomes}" BackgroundColor="#F0F0F0">
+                <CollectionView.EmptyView>
+                    <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="50">
+                        <Label Text="No income sources found" FontSize="18" TextColor="Gray" HorizontalTextAlignment="Center" />
+                        <Button Text="Add Income" Command="{Binding NavigateToAddIncomeCommand}" Margin="0,20,0,0" />
+                    </StackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Income">
+                        <Frame Margin="10,5" Padding="15" CornerRadius="10" HasShadow="True">
+                            <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto">
+                                <StackLayout Grid.Column="0">
+                                    <Label Text="{Binding Source}" FontSize="18" FontAttributes="Bold" />
+                                    <Label Text="{Binding Date, StringFormat='{0:MMM dd, yyyy}'}" TextColor="Gray" FontSize="12" />
+                                    <Label Text="{Binding Category}" TextColor="Gray" FontSize="12" />
+                                </StackLayout>
+                                <Label Grid.Column="1" Text="{Binding Amount, StringFormat='{0:C}'}" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" TextColor="Green" />
+                                <StackLayout Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalOptions="End" Margin="0,10,0,0">
+                                    <Button Text="Edit" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:IncomesViewModel}}, Path=NavigateToEditIncomeCommand}" CommandParameter="{Binding .}" FontSize="12" HeightRequest="35" Margin="5,0" />
+                                    <Button Text="Delete" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:IncomesViewModel}}, Path=DeleteIncomeCommand}" CommandParameter="{Binding Id}" BackgroundColor="Red" TextColor="White" FontSize="12" HeightRequest="35" />
+                                </StackLayout>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

@@ -11,7 +11,7 @@ namespace ExpenseTracker.ViewModels;
 /// </summary>
 public partial class InvoicesViewModel : BaseViewModel
 {
-    private readonly ExpenseService _expenseService;
+    private readonly LocalExpenseService _expenseService;
 
     [ObservableProperty]
     private ObservableCollection<Invoice> invoices = new();
@@ -25,7 +25,7 @@ public partial class InvoicesViewModel : BaseViewModel
     [ObservableProperty]
     private bool showAllStatuses = true;
 
-    public InvoicesViewModel(ExpenseService expenseService)
+    public InvoicesViewModel(LocalExpenseService expenseService)
     {
         _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
     }
