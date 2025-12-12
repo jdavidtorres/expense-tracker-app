@@ -6,6 +6,9 @@ using ExpenseTracker.Services;
 
 namespace ExpenseTracker.ViewModels;
 
+/// <summary>
+/// ViewModel for the dashboard displaying summary data and quick access
+/// </summary>
 public partial class DashboardViewModel : BaseViewModel
 {
     private readonly ExpenseService _expenseService;
@@ -43,8 +46,8 @@ public partial class DashboardViewModel : BaseViewModel
 
     public DashboardViewModel(ExpenseService expenseService, GamificationService gamificationService)
     {
-        _expenseService = expenseService;
-        _gamificationService = gamificationService;
+        _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
+        _gamificationService = gamificationService ?? throw new ArgumentNullException(nameof(gamificationService));
     }
 
     [RelayCommand]
@@ -53,14 +56,16 @@ public partial class DashboardViewModel : BaseViewModel
         try
         {
             IsLoading = true;
-            ErrorMessage = null;
+            ClearError();
+
+            var now = DateTime.Now;
 
             // Load gamification profile
             GamificationProfile = await _gamificationService.GetProfileAsync();
             MotivationalMessage = await _gamificationService.GetMotivationalMessageAsync();
 
             // Load monthly summary
-            CurrentMonthSummary = await _expenseService.GetMonthlySummaryAsync(DateTime.Now.Year, DateTime.Now.Month);
+            CurrentMonthSummary = await _expenseService.GetMonthlySummaryAsync(now.Year, now.Month);
 
             // Calculate budget health
             if (CurrentMonthSummary != null)
@@ -73,17 +78,17 @@ public partial class DashboardViewModel : BaseViewModel
             }
 
             // Load yearly summary
-            CurrentYearSummary = await _expenseService.GetYearlySummaryAsync(DateTime.Now.Year);
+            CurrentYearSummary = await _expenseService.GetYearlySummaryAsync(now.Year);
 
             // Load category breakdown
             var categories = await _expenseService.GetCategorySummaryAsync();
             CategoryBreakdown = new ObservableCollection<CategorySummary>(categories);
 
-            // Load recent subscriptions
+            // Load recent subscriptions (top 5)
             var subscriptions = await _expenseService.GetSubscriptionsAsync();
             RecentSubscriptions = new ObservableCollection<Subscription>(subscriptions.Take(5));
 
-            // Load recent invoices
+            // Load recent invoices (top 5)
             var invoices = await _expenseService.GetInvoicesAsync();
             RecentInvoices = new ObservableCollection<Invoice>(invoices.Take(5));
         }

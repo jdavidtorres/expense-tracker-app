@@ -1,4 +1,5 @@
-﻿using ExpenseTracker.Views;
+﻿using ExpenseTracker.Constants;
+using ExpenseTracker.Views;
 
 namespace ExpenseTracker
 {
@@ -8,11 +9,11 @@ namespace ExpenseTracker
 		{
 			InitializeComponent();
 
-			// Register routes for navigation
-			Routing.RegisterRoute("add-subscription", typeof(SubscriptionFormPage));
-			Routing.RegisterRoute("edit-subscription", typeof(SubscriptionFormPage));
-			Routing.RegisterRoute("add-invoice", typeof(InvoiceFormPage));
-			Routing.RegisterRoute("edit-invoice", typeof(InvoiceFormPage));
+			// Register routes for navigation using constants
+			Routing.RegisterRoute(NavigationRoutes.AddSubscription, typeof(SubscriptionFormPage));
+			Routing.RegisterRoute(NavigationRoutes.EditSubscription, typeof(SubscriptionFormPage));
+			Routing.RegisterRoute(NavigationRoutes.AddInvoice, typeof(InvoiceFormPage));
+			Routing.RegisterRoute(NavigationRoutes.EditInvoice, typeof(InvoiceFormPage));
 		}
 	}
 }

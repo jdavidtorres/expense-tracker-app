@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ExpenseTracker.Models;
@@ -6,6 +5,9 @@ using ExpenseTracker.Services;
 
 namespace ExpenseTracker.ViewModels;
 
+/// <summary>
+/// ViewModel for subscription form (add/edit)
+/// </summary>
 [QueryProperty(nameof(Subscription), "subscription")]
 public partial class SubscriptionFormViewModel : BaseViewModel
 {
@@ -21,12 +23,15 @@ public partial class SubscriptionFormViewModel : BaseViewModel
     [ObservableProperty]
     private string formTitle = "Add Subscription";
 
+    /// <summary>
+    /// Gets the list of available billing cycles
+    /// </summary>
     public List<BillingCycle> BillingCycles { get; } = Enum.GetValues<BillingCycle>().ToList();
 
     public SubscriptionFormViewModel(ExpenseService expenseService, GamificationService gamificationService)
     {
-        _expenseService = expenseService;
-        _gamificationService = gamificationService;
+        _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
+        _gamificationService = gamificationService ?? throw new ArgumentNullException(nameof(gamificationService));
     }
 
     partial void OnSubscriptionChanged(Subscription value)
@@ -46,23 +51,13 @@ public partial class SubscriptionFormViewModel : BaseViewModel
     [RelayCommand]
     private async Task SaveAsync()
     {
+        if (!ValidateSubscription())
+            return;
+
         try
         {
             IsLoading = true;
             ClearError();
-
-            // Basic validation
-            if (string.IsNullOrWhiteSpace(Subscription.Name))
-            {
-                ErrorMessage = "Subscription name is required.";
-                return;
-            }
-
-            if (Subscription.Amount <= 0)
-            {
-                ErrorMessage = "Amount must be greater than 0.";
-                return;
-            }
 
             Subscription.UpdatedAt = DateTime.UtcNow;
 
@@ -105,5 +100,26 @@ public partial class SubscriptionFormViewModel : BaseViewModel
     private async Task CancelAsync()
     {
         await Shell.Current.GoToAsync("..");
+    }
+
+    /// <summary>
+    /// Validates the subscription data
+    /// </summary>
+    /// <returns>True if valid, false otherwise</returns>
+    private bool ValidateSubscription()
+    {
+        if (string.IsNullOrWhiteSpace(Subscription.Name))
+        {
+            SetError("Subscription name is required.");
+            return false;
+        }
+
+        if (Subscription.Amount <= 0)
+        {
+            SetError("Amount must be greater than 0.");
+            return false;
+        }
+
+        return true;
     }
 }

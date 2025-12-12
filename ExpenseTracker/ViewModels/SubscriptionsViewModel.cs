@@ -6,6 +6,9 @@ using ExpenseTracker.Services;
 
 namespace ExpenseTracker.ViewModels;
 
+/// <summary>
+/// ViewModel for managing subscriptions display and operations
+/// </summary>
 public partial class SubscriptionsViewModel : BaseViewModel
 {
     private readonly ExpenseService _expenseService;
@@ -18,7 +21,7 @@ public partial class SubscriptionsViewModel : BaseViewModel
 
     public SubscriptionsViewModel(ExpenseService expenseService)
     {
-        _expenseService = expenseService;
+        _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
     }
 
     [RelayCommand]
@@ -27,7 +30,7 @@ public partial class SubscriptionsViewModel : BaseViewModel
         try
         {
             IsLoading = true;
-            ErrorMessage = null;
+            ClearError();
 
             var data = await _expenseService.GetSubscriptionsAsync();
             Subscriptions = new ObservableCollection<Subscription>(data);
@@ -43,25 +46,14 @@ public partial class SubscriptionsViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private async Task DeleteSubscriptionByIdAsync(string id)
+    private async Task DeleteSubscriptionAsync(string id)
     {
+        if (string.IsNullOrWhiteSpace(id))
+            return;
+
         try
         {
             await _expenseService.DeleteSubscriptionAsync(id);
-            await LoadSubscriptionsAsync();
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = $"Failed to delete subscription: {ex.Message}";
-        }
-    }
-
-    [RelayCommand]
-    private async Task DeleteSubscriptionAsync(Subscription subscription)
-    {
-        try
-        {
-            await _expenseService.DeleteSubscriptionAsync(subscription.Id);
             await LoadSubscriptionsAsync();
         }
         catch (Exception ex)
@@ -79,6 +71,9 @@ public partial class SubscriptionsViewModel : BaseViewModel
     [RelayCommand]
     private async Task NavigateToEditSubscriptionAsync(Subscription subscription)
     {
+        if (subscription == null)
+            return;
+
         await Shell.Current.GoToAsync($"edit-subscription?id={subscription.Id}");
     }
 
@@ -86,32 +81,5 @@ public partial class SubscriptionsViewModel : BaseViewModel
     private async Task RefreshAsync()
     {
         await LoadSubscriptionsAsync();
-    }
-
-    [RelayCommand]
-    private async Task ToggleSubscriptionStatusAsync(Subscription subscription)
-    {
-        try
-        {
-            // Toggle the status (for subscription, this might be active/inactive)
-            // You can implement actual status toggle logic here
-            await LoadSubscriptionsAsync(); // Refresh to reflect changes
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = $"Failed to toggle subscription status: {ex.Message}";
-        }
-    }
-
-    [RelayCommand]
-    private async Task EditSubscriptionAsync(Subscription subscription)
-    {
-        await Shell.Current.GoToAsync($"edit-subscription?id={subscription.Id}");
-    }
-
-    [RelayCommand]
-    private async Task AddSubscriptionAsync()
-    {
-        await Shell.Current.GoToAsync("add-subscription");
     }
 }

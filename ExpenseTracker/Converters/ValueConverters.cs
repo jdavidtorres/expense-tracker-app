@@ -2,6 +2,9 @@ using System.Globalization;
 
 namespace ExpenseTracker.Converters;
 
+/// <summary>
+/// Converts boolean values to colors (Blue for true, Gray for false)
+/// </summary>
 public class BoolToColorConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -19,6 +22,9 @@ public class BoolToColorConverter : IValueConverter
     }
 }
 
+/// <summary>
+/// Converts any value to a boolean indicating if it's not null
+/// </summary>
 public class IsNotNullConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -32,6 +38,9 @@ public class IsNotNullConverter : IValueConverter
     }
 }
 
+/// <summary>
+/// Converts invoice status to boolean based on parameter
+/// </summary>
 public class StatusToBoolConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -53,6 +62,9 @@ public class StatusToBoolConverter : IValueConverter
     }
 }
 
+/// <summary>
+/// Converts achievement unlock status to icon (checkmark for unlocked, lock for locked)
+/// </summary>
 public class AchievementIconConverter : IValueConverter
 {
     public static readonly AchievementIconConverter Instance = new();

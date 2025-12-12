@@ -6,6 +6,9 @@ using ExpenseTracker.Services;
 
 namespace ExpenseTracker.ViewModels;
 
+/// <summary>
+/// ViewModel for gamification features including achievements, levels, and progress tracking
+/// </summary>
 public partial class GamificationViewModel : BaseViewModel
 {
     private readonly GamificationService _gamificationService;
@@ -28,6 +31,9 @@ public partial class GamificationViewModel : BaseViewModel
     [ObservableProperty]
     private BudgetGoalTracker? budgetGoalTracker;
 
+    /// <summary>
+    /// Gets a value indicating whether there are recent achievements to display
+    /// </summary>
     public bool HasRecentAchievements => RecentAchievements.Count > 0;
 
     [ObservableProperty]
@@ -41,7 +47,7 @@ public partial class GamificationViewModel : BaseViewModel
 
     public GamificationViewModel(GamificationService gamificationService)
     {
-        _gamificationService = gamificationService;
+        _gamificationService = gamificationService ?? throw new ArgumentNullException(nameof(gamificationService));
         Title = "Achievements";
     }
 
@@ -51,7 +57,7 @@ public partial class GamificationViewModel : BaseViewModel
         try
         {
             IsLoading = true;
-            ErrorMessage = null;
+            ClearError();
 
             Profile = await _gamificationService.GetProfileAsync();
             var allAchievements = await _gamificationService.GetAchievementsAsync();
@@ -85,16 +91,28 @@ public partial class GamificationViewModel : BaseViewModel
         await LoadGamificationDataAsync();
     }
 
-    public async Task UpdateBudgetStatusAsync(decimal monthlyBudget, decimal currentSpending)
+    /// <summary>
+    /// Updates the budget status display
+    /// </summary>
+    /// <param name="monthlyBudget">Monthly budget limit</param>
+    /// <param name="currentSpending">Current spending amount</param>
+    public void UpdateBudgetStatus(decimal monthlyBudget, decimal currentSpending)
     {
         BudgetStatus = _gamificationService.CalculateBudgetStatus(monthlyBudget, currentSpending);
     }
 
-    public async Task UpdateBudgetGoalProgressAsync(decimal income, decimal essentials, decimal savings, decimal discretionary)
+    /// <summary>
+    /// Updates the budget goal progress tracker
+    /// </summary>
+    public void UpdateBudgetGoalProgress(decimal income, decimal essentials, decimal savings, decimal discretionary)
     {
         BudgetGoalTracker = _gamificationService.CalculateBudgetGoalProgress(income, essentials, savings, discretionary);
     }
 
+    /// <summary>
+    /// Records an expense tracking action and checks for new achievements
+    /// </summary>
+    /// <returns>List of newly unlocked achievements</returns>
     public async Task<List<Achievement>> RecordExpenseTrackedAsync()
     {
         var newAchievements = await _gamificationService.RecordExpenseTrackedAsync();

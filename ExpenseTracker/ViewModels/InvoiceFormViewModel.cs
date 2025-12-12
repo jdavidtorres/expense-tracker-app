@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ExpenseTracker.Models;
@@ -6,6 +5,9 @@ using ExpenseTracker.Services;
 
 namespace ExpenseTracker.ViewModels;
 
+/// <summary>
+/// ViewModel for invoice form (add/edit)
+/// </summary>
 [QueryProperty(nameof(Invoice), "invoice")]
 public partial class InvoiceFormViewModel : BaseViewModel
 {
@@ -21,12 +23,15 @@ public partial class InvoiceFormViewModel : BaseViewModel
     [ObservableProperty]
     private string formTitle = "Add Invoice";
 
+    /// <summary>
+    /// Gets the list of available invoice statuses
+    /// </summary>
     public List<InvoiceStatus> InvoiceStatuses { get; } = Enum.GetValues<InvoiceStatus>().ToList();
 
     public InvoiceFormViewModel(ExpenseService expenseService, GamificationService gamificationService)
     {
-        _expenseService = expenseService;
-        _gamificationService = gamificationService;
+        _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
+        _gamificationService = gamificationService ?? throw new ArgumentNullException(nameof(gamificationService));
     }
 
     partial void OnInvoiceChanged(Invoice value)
@@ -46,29 +51,13 @@ public partial class InvoiceFormViewModel : BaseViewModel
     [RelayCommand]
     private async Task SaveAsync()
     {
+        if (!ValidateInvoice())
+            return;
+
         try
         {
             IsLoading = true;
             ClearError();
-
-            // Basic validation
-            if (string.IsNullOrWhiteSpace(Invoice.InvoiceNumber))
-            {
-                ErrorMessage = "Invoice number is required.";
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(Invoice.Name))
-            {
-                ErrorMessage = "Invoice name is required.";
-                return;
-            }
-
-            if (Invoice.Amount <= 0)
-            {
-                ErrorMessage = "Amount must be greater than 0.";
-                return;
-            }
 
             Invoice.UpdatedAt = DateTime.UtcNow;
 
@@ -111,5 +100,32 @@ public partial class InvoiceFormViewModel : BaseViewModel
     private async Task CancelAsync()
     {
         await Shell.Current.GoToAsync("..");
+    }
+
+    /// <summary>
+    /// Validates the invoice data
+    /// </summary>
+    /// <returns>True if valid, false otherwise</returns>
+    private bool ValidateInvoice()
+    {
+        if (string.IsNullOrWhiteSpace(Invoice.InvoiceNumber))
+        {
+            SetError("Invoice number is required.");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(Invoice.Name))
+        {
+            SetError("Invoice name is required.");
+            return false;
+        }
+
+        if (Invoice.Amount <= 0)
+        {
+            SetError("Amount must be greater than 0.");
+            return false;
+        }
+
+        return true;
     }
 }
